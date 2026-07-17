@@ -4,7 +4,7 @@
 > **Repository:** `collector-market-backend` (this doc lives at `/docs/planning.md`)  
 > **Stack:** Java / Spring Boot · PostgreSQL · React  
 > **Audience:** Public product for collectors — MVP scope is sports cards (all sports); the platform is named for future collectible categories  
-> **MVP:** Search a card and see the current market (live listings, floor price) plus price history that accrues from day one — backfilled with third-party sold data where available
+> **MVP:** Search a card and see the current market (live listings, floor price) plus a forward-accruing history of our own observations (floor over time and inferred sales)
 
 > ⚠️ **v1.1 pivot:** The original plan assumed sold-listing data was available from the eBay Browse API. It is not — sold data is gated behind the limited-release Marketplace Insights API. The data strategy has been revised to a **hybrid model** (see §5).
 
@@ -16,7 +16,7 @@
 
 A public web application that lets sports card collectors search any card and immediately see real market data: the current market state (live listings, floor price, ask distribution), observed and inferred sales, trends over time, grade-level price spreads, and volume activity. The goal is to be the fastest, cleanest way to answer the question *"What is this card actually worth right now?"*
 
-At launch, the strongest signal is the **current market view** (what the card is listed for right now, by grade). Historical depth accrues continuously from our own ingestion and is backfilled with third-party sold data where coverage exists. Our forward-accruing, owned dataset is the long-term moat.
+At launch, the strongest signal is the **current market view** (what the card is listed for right now, by grade). Historical depth accrues from our own ingestion — floor price over time and inferred sales from fixed-price quantity deltas. No third-party sold-data backfill: after evaluating the available options (see §5.1.2), we determined that shipping without deep historical depth is preferable to building on a legally undefensible dependency. Our persistent dataset is entirely computed by us — daily market aggregates and detected transactions — not stored raw listing data (see §5.4). That's the moat.
 
 ---
 
@@ -40,34 +40,35 @@ At launch, the strongest signal is the **current market view** (what the card is
 | F-01 | User can search a card by player name, year, set, and card number | Must Have |
 | F-02 | System returns a list of matching cards with disambiguation | Must Have |
 | F-03 | User can view a **current market view** for a selected card: active listings, floor (lowest ask), median ask, listing count — per grade | Must Have |
-| F-04 | User can view a price history chart for a selected card, built from (a) our own accrued observations and (b) third-party sold data where available | Must Have |
+| F-04 | User can view a price history chart for a selected card, built from our own accrued observations (floor over time, inferred sales). Depth grows from the point of first tracking; no deep historical backfill in MVP | Must Have |
 | F-05 | Price history is filterable by time range (30 / 90 / 180 / 365 days) | Must Have |
 | F-06 | Price history is filterable by grade (Raw, PSA 9, PSA 10, BGS 9.5, etc.) | Must Have |
 | F-07 | Charts clearly distinguish price types — **SOLD**, **INFERRED_SALE**, and **ASK** (floor) series are never silently mixed | Must Have |
-| F-08 | Each data point links back to the original listing where a URL exists | Must Have |
+| F-08 | Each data point links back to the original listing where a URL exists, within the source-retention window (see §5.4) | Must Have |
 | F-09 | Summary stats shown: last sale, average, high, low, # of sales, current floor | Must Have |
 | F-10 | Data refreshes on a scheduled basis (at minimum daily) | Must Have |
+| F-11 | Cards with no sold history show an explicit empty state (not a broken chart) plus related-card suggestions; related cards are never presented as this card's price estimate | Must Have |
 
-> Note: F-07 is a credibility requirement. Asking prices and transaction prices are different signals; mixing them in one undifferentiated line would undermine trust in the product.
+> Note: F-07 is a credibility requirement. Asking prices and transaction prices are different signals; mixing them in one undifferentiated line would undermine trust in the product. F-11 extends the same principle to empty states.
 
 ### 3.2 Phase 2 — Watchlist & Accounts
 
 | ID | Requirement |
 |---|---|
-| F-11 | User can register and log in (email + password) |
-| F-12 | Logged-in user can add cards to a watchlist |
-| F-13 | Watchlist shows latest price and % change since added |
-| F-14 | User receives email alert when a watched card moves ±X% |
+| F-12 | User can register and log in (email + password) |
+| F-13 | Logged-in user can add cards to a watchlist |
+| F-14 | Watchlist shows latest price and % change since added |
+| F-15 | User receives email alert when a watched card moves ±X% |
 
 ### 3.3 Phase 3 — Portfolio & Analytics
 
 | ID | Requirement |
 |---|---|
-| F-15 | User can log cards they own with purchase price |
-| F-16 | Portfolio shows total estimated value and P&L |
-| F-17 | Market dashboard: top movers, most searched, highest volume |
-| F-18 | Grade premium analysis (price delta between Raw → PSA 9 → PSA 10) |
-| F-19 | Player news feed correlated with price movement |
+| F-16 | User can log cards they own with purchase price |
+| F-17 | Portfolio shows total estimated value and P&L |
+| F-18 | Market dashboard: top movers, most searched, highest volume |
+| F-19 | Grade premium analysis (price delta between Raw → PSA 9 → PSA 10) |
+| F-20 | Player news feed correlated with price movement |
 
 ---
 
@@ -107,27 +108,24 @@ What we build from it:
 
 **eBay App registration required at:** https://developer.ebay.com
 
-#### 5.1.2 Third-party sold-data API — historical backfill
+#### 5.1.2 Third-party sold-data APIs — evaluated and rejected for MVP
 
-**Selected: The Card API** (thecardapi.com) — real sold prices (incl. Best Offer accepted), free-tier self-serve keys, 15M+ transactions, daily indexing. Adopted as the Phase 1 backfill source, **contingent on the OQ-8 evaluation passing** (data provenance, redistribution ToS, per-sport coverage depth, free-tier limits, reliability as a business dependency).
+**Decision:** no third-party sold-data source in MVP. See OQ-8 for rationale — The Card API was the leading candidate but its ToS shifts marketplace-compliance risk to the caller, which is incompatible with a public product. Other surveyed options (below) share the same underlying problem (unlicensed scraping) or are inaccessible.
 
-It plays a **dual role** in the project:
+Sold-price data in MVP therefore comes exclusively from our own inferred-sales pipeline (§5.1.1). This weakens the launch pitch — no deep historical backfill — but the alternative was a legally undefensible dependency on a scraped source.
 
-1. **Sold-price backfill** — solves the cold-start problem for price history charts.
-2. **Card catalog seed (resolves OQ-2)** — its indexed transactions carry card identities (player, year, set, number, grade), giving us a reference dataset to bootstrap the `card` catalog and to fuzzy-match eBay listing titles against. This means we do not depend on eBay titles alone for normalization from day one.
-
-Other surveyed options (for reference):
+Surveyed options (retained for reference):
 
 | Provider | History? | Access | Notes |
 |---|---|---|---|
-| The Card API | Yes (sold) | Free tier, self-serve | Primary candidate; provenance TBD |
-| Card Hedge | Yes (Price History API) | Apply for key; likely paid | Fallback candidate |
-| SportsCardsPro / PriceCharting | **No** — current values only | Paid subscription | Useful as reference catalog, not history |
+| The Card API | Yes (sold) | Free tier | Evaluated, rejected (OQ-8): ToS disclaims marketplace-compliance |
+| Card Hedge | Yes (Price History API) | Apply for key; likely paid | Same underlying provenance concern; also paid |
+| SportsCardsPro / PriceCharting | **No** — current values only | Paid subscription | Not history; not useful for backfill |
 | Card Ladder / Market Movers | Yes (deep) | Consumer apps, no public API | Not integrable |
 
-#### 5.1.3 eBay Marketplace Insights API — official route (long shot, pursue in parallel)
+#### 5.1.3 eBay Marketplace Insights API — deferred (OQ-10)
 
-Apply for limited-release access. If granted: ~90 days of true sold data, official and ToS-clean. Do not block MVP on this.
+The only known route to sold-price data with clean provenance. **Not pursued for MVP** — first iteration ships on Browse API alone. Documented here so a future iteration can pick it up: limited-release API, application required, if granted provides ~90 days of true sold data with ToS-clean redistribution.
 
 #### 5.1.4 Data-type discipline
 
@@ -156,6 +154,23 @@ A normalization/parsing layer is required to group listings into a canonical car
 - Fuzzy matching against a reference card catalog
 - AI-assisted classification (Claude API as an internal service)
 - Combination of the above
+
+### 5.4 Data Retention Policy (OQ-9)
+
+eBay's Browse API terms permit retaining listing data "as required" for the operational purpose, then require disposal. Our windows below are policy, not statute — revisit if terms change or if a specific window proves too short in practice.
+
+| Data | Retention | Purpose the window serves |
+|---|---|---|
+| `listing_observation` rows (raw ask + listing metadata) | **7 days rolling** | Enough to compute daily aggregates and detect inferred sales across consecutive polls, with a buffer for missed runs. Deleted by nightly job after that. |
+| `price_snapshot.external_url`, `raw_title`, `external_id` (linkback + audit fields) | **30 days rolling** | Supports F-08 (linkback to source) for a useful window; most eBay listings themselves expire well within this. Nullified by nightly job after that; the price/date/card/grade tuple is retained permanently. |
+| `market_metric_daily` (derived aggregates) | **Permanent** | Our observations *about* the market on a given day. Not republished listing data. |
+| `price_snapshot` (transaction tuples: price, date, card, grade) | **Permanent** | Synthesized records of transactions we detected; not raw listing data. |
+
+**Enforcement:** a single retention job runs nightly, deleting expired `listing_observation` rows and nullifying expired linkback fields on `price_snapshot`.
+
+**Where the values live:** retention windows are Spring `@ConfigurationProperties` under the `retention.*` prefix in `application.yml`, with defaults shipped at 7 and 30 days as above. **Not** in the `app_setting` table (§7.12) — deliberately. Retention has compliance implications and belongs in code review, not a runtime settings screen where a mistyped "70" for "7" wouldn't get caught. Environment-specific overrides via env vars are supported (standard Spring config precedence) but still require a deploy to change. See §9 for the general rule on what goes where.
+
+**Trade-off accepted:** older sales lose their linkback to source (F-08). This is unavoidable given the retention constraint and is documented in F-08.
 
 ---
 
@@ -268,6 +283,8 @@ CREATE INDEX idx_price_snapshot_card_sold ON price_snapshot(card_id, sold_at DES
 CREATE INDEX idx_price_snapshot_sold_at   ON price_snapshot(sold_at DESC);
 ```
 
+**Retention (see §5.4):** the transaction tuple (`sale_price`, `sold_at`, `card_id`, grade, `price_type`, `source`) is **permanent** — this is a synthesized record of a transaction we detected, not republished listing data. The linkback and audit fields (`external_url`, `raw_title`, `external_id`) are **transient** — nullified 30 days after `sold_at` by a nightly job. F-08 linkback is guaranteed only within that window.
+
 ### 7.4 `listing_observation` — Daily active-listing snapshots (ask data)
 
 One row per tracked listing per observation day. Source for floor price, ask distribution, listing counts, and the sold-quantity deltas that produce inferred sales.
@@ -294,7 +311,7 @@ CREATE INDEX idx_listing_obs_card_time ON listing_observation(card_id, observed_
 
 **Derived metrics (computed, or materialized later if needed):** per card/grade/day — floor (MIN ask), median ask, active count. Inferred sale detection: `quantity_sold` increment between consecutive observations of the same listing → insert into `price_snapshot` with `price_type = 'INFERRED_SALE'`.
 
-**Retention note:** this table grows fast (listings × days). Plan for partitioning by month or aggregating observations older than N days into daily rollups.
+**Retention (see §5.4):** this table is **transient** — rows are deleted 7 days after `observed_at` by a nightly job. Daily aggregates are extracted into `market_metric_daily` (§7.11) before deletion. Total size stays bounded regardless of how long the product runs.
 
 ### 7.5 `user_account` — Registered users (Phase 2)
 
@@ -370,6 +387,90 @@ CREATE INDEX idx_competition_event_dates ON competition_event(start_date, end_da
 ```
 
 **Selection rule for a card's chart:** return events whose competition belongs to the card's sport **plus** all `multi`-sport events (e.g., Olympics display across all cards), intersected with the requested time range. Events are delivered **inside the existing price history response** (§8.2) — no separate endpoint.
+
+**Maintenance (OQ-15):** rows are seeded from a versioned reference file in the repo, loaded idempotently at app startup, and updated via PR when new seasons are announced. A weekly health check warns when any active competition has too few future events on the books (see OQ-15 for defaults).
+
+### 7.10 `card_tracking` — Poller inclusion & priority tiers (OQ-7)
+
+Governs which cards the active-listing poller touches on any given day. One row per card that has ever been tracked; absence of a row means "not tracked."
+
+```sql
+CREATE TABLE card_tracking (
+    card_id             UUID PRIMARY KEY REFERENCES card(id),
+    tier                VARCHAR(20)  NOT NULL,   -- "SEED", "WATCHLISTED", "SEARCHED", "DECAYED"
+    poll_cadence        VARCHAR(20)  NOT NULL,   -- "DAILY", "WEEKLY", "PAUSED"
+    last_polled_at      TIMESTAMPTZ,
+    last_engagement_at  TIMESTAMPTZ  NOT NULL,   -- most recent search or watchlist add
+    added_at            TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_card_tracking_cadence_polled ON card_tracking(poll_cadence, last_polled_at);
+CREATE INDEX idx_card_tracking_engagement     ON card_tracking(last_engagement_at DESC);
+```
+
+**Lifecycle:**
+
+- **Seed cards** are loaded at startup with `tier = 'SEED'`, `poll_cadence = 'DAILY'`. They never age out.
+- **User search** on an untracked card inserts a row with `tier = 'SEARCHED'`, `poll_cadence = 'DAILY'`, `last_engagement_at = now()`.
+- **Watchlist add** upserts to `tier = 'WATCHLISTED'` (or keeps `SEED` if already seeded), `poll_cadence = 'DAILY'`.
+- **Nightly aging job:** `SEARCHED` cards whose `last_engagement_at` is older than N days without further engagement demote to `DECAYED` with `poll_cadence = 'WEEKLY'`. A further threshold demotes to `PAUSED`. Removing a watchlist entry demotes to `SEARCHED` (not straight to `DECAYED` — user was interested recently).
+- **Historical data is never deleted** when a card is demoted or paused — `price_snapshot` and `listing_observation` rows remain.
+
+The specific N-day thresholds are tuning parameters, not schema. Start conservative (e.g., 14 days to decay, 60 to pause) and adjust once real engagement data is available. Stored as runtime-editable values in `app_setting` (§7.12) — `tracking.decay_after_days`, `tracking.pause_after_days` — so tuning doesn't require a redeploy.
+
+### 7.11 `market_metric_daily` — Derived market aggregates (OQ-9)
+
+Persistent daily aggregates computed from `listing_observation` before the raw observations are deleted (§5.4). This is the permanent record of market state over time — our observations *about* the market on a given day, not republished listing data.
+
+```sql
+CREATE TABLE market_metric_daily (
+    card_id           UUID          NOT NULL REFERENCES card(id),
+    grade_source      VARCHAR(20),
+    grade_value       VARCHAR(10),
+    metric_date       DATE          NOT NULL,
+    floor_price       NUMERIC(10,2),          -- MIN ask for the (card, grade) on that day
+    median_ask        NUMERIC(10,2),
+    active_listings   INT           NOT NULL, -- distinct listings observed
+    new_listings      INT           NOT NULL DEFAULT 0,
+    delistings        INT           NOT NULL DEFAULT 0,
+    computed_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    PRIMARY KEY (card_id, grade_source, grade_value, metric_date)
+);
+
+CREATE INDEX idx_market_metric_card_date ON market_metric_daily(card_id, metric_date DESC);
+```
+
+**Population:** the poller's daily job computes one row per (card, grade, day) from that day's `listing_observation` rows, then the retention job removes the raw rows a few days later (§5.4). `floorHistory` in the price history response (§8.2) reads from this table, not from `listing_observation`.
+
+**Growth:** bounded and predictable — cards actively tracked × grade tiers × days. With OQ-7 aging demoting dormant cards out of polling, the row-add rate naturally throttles over time. Partitioning by month is straightforward if it ever becomes necessary; keep it as a single table until measurements justify otherwise.
+
+### 7.12 `app_setting` — Runtime-tunable operational knobs
+
+Key-value store for values that need to change during operation without a redeploy. Read via a short-TTL cache (e.g., 60s) so a settings change propagates within a minute.
+
+```sql
+CREATE TABLE app_setting (
+    key          VARCHAR(100) PRIMARY KEY,
+    value        TEXT         NOT NULL,
+    value_type   VARCHAR(20)  NOT NULL,       -- "INT", "STRING", "DURATION"
+    description  TEXT,
+    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    updated_by   VARCHAR(100)                 -- audit: who last touched it
+);
+```
+
+**What lives here (illustrative, not exhaustive):**
+
+| Key | Purpose | OQ |
+|---|---|---|
+| `tracking.decay_after_days` | Days without engagement before `SEARCHED` → `DECAYED` | OQ-7 |
+| `tracking.pause_after_days` | Days without engagement before `DECAYED` → `PAUSED` | OQ-7 |
+| `poller.daily_cadence_hours` | Interval between polls for `DAILY` cadence cards | OQ-7 |
+| `seed.refresh_interval_days` | How often the hand-curated seed is re-checked | OQ-2 |
+| `events.min_future_events` | Minimum future events per active competition before health check warns | OQ-15 |
+| `events.check_horizon_months` | Look-ahead window for the events health check | OQ-15 |
+
+**What does NOT live here (see §9):** retention windows (§5.4 — code-reviewed for compliance), API endpoints/URLs, credentials, feature flags with revenue implications. When in doubt, prefer `application.yml`.
 
 ---
 
@@ -453,11 +554,29 @@ Response — transaction series and floor series are returned as **separate arra
       "startDate": "2026-09-29",
       "endDate": "2026-11-01"
     }
+  ],
+  "relatedCards": [
+    {
+      "cardId": "uuid",
+      "relation": "SAME_CARD_DIFFERENT_GRADE",
+      "grade": "PSA9",
+      "latestSalePrice": 168.00,
+      "latestSaleDate": "2026-07-05"
+    },
+    {
+      "cardId": "uuid",
+      "relation": "SAME_SET_SAME_PLAYER",
+      "cardNumber": "US2",
+      "latestSalePrice": 92.00,
+      "latestSaleDate": "2026-07-03"
+    }
   ]
 }
 ```
 
 Events (§7.8–7.9) are included for the card's sport plus `multi`-sport competitions, limited to the requested time range. The frontend renders them as shaded date-range bands behind the price series.
+
+**`relatedCards` (F-11, OQ-5).** Populated only when the primary series is empty for the requested grade/time-range. Phase 1 similarity rule: same player, same year — adjacent grades of the same card first, then adjacent cards in the same set. `relation` codes: `SAME_CARD_DIFFERENT_GRADE`, `SAME_SET_SAME_PLAYER`. Related cards are context, never presented as this card's price estimate. When both `sales` and `floorHistory` are empty *and* `relatedCards` is empty, the frontend shows the "Not tracked yet" state with a watchlist CTA.
 
 ### 8.3 Current Market View
 
@@ -487,10 +606,11 @@ Returns average price per grade level to show the grade premium spread.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| **Data strategy** | Hybrid: own active-listing ingestion (Browse API) + third-party sold-data backfill | Browse API cannot return sold listings; Marketplace Insights is limited-release. Owned forward-accruing dataset is the moat; backfill solves the cold start |
+| **Data strategy** | Own active-listing ingestion (Browse API) + inferred sales from quantity deltas. No third-party sold-data backfill in MVP | Browse API cannot return sold listings; Marketplace Insights is limited-release; evaluated third-party aggregators (OQ-8) but their scraped provenance shifts marketplace-compliance risk to us. Trade slower cold-start for legally defensible sourcing |
 | **Price semantics** | Explicit `price_type` (SOLD / INFERRED_SALE / ASK) on every stored price; series never mixed in UI | Product credibility depends on never presenting asking prices as transaction prices |
 | **Sport categorization** | Lookup table (`sport`), not Postgres ENUM | No DDL migration to add a sport; carries UI metadata (`display_name`, `icon_key`, `is_active`); clean FKs. API stays human-readable (`?sport=football`) |
 | **Event overlays** | `sport_competition` + `competition_event` tables; shaded date-range bands; delivered inside the price history response | Date ranges beat point markers for tournament context; no extra frontend round-trip; `multi` code handles Olympics across all sports |
+| **Configuration split** | Retention windows and other compliance-adjacent values in `application.yml` (code-reviewed); operational tuning knobs in `app_setting` table (runtime-editable) | Retention values getting mistyped in a settings UI is a real risk given eBay ToS is the underlying constraint. Tuning knobs (aging thresholds, cadences) genuinely need adjustment against live data and shouldn't require a redeploy |
 | **Language/Framework** | Java 21 + Spring Boot 3.x | Team familiarity |
 | **Database** | PostgreSQL | Relational + time-series queries work well; no need for a dedicated TSDB at MVP scale |
 | **HTTP Client** | Spring WebClient | Non-blocking; handles eBay rate limits better |
@@ -514,15 +634,16 @@ Returns average price per grade level to show the grade premium spread.
 
 This is the highest-risk component. Recommended phased approach:
 
-**Phase 1 (MVP):** Rule-based parser + reference catalog seeded from The Card API
-- Bootstrap the `card` catalog from The Card API's indexed card identities (player, year, set, number) — resolves OQ-2
-- Extract year (4-digit number), player name (cross-reference the seeded catalog), set name, card number from eBay titles
+**Phase 1 (MVP):** Rule-based parser + small hand-curated seed catalog
+- Ship a small hand-curated `card` catalog (a few hundred rows — same rookies-of-the-last-3-years scope as the OQ-7 tracking seed). Seeded manually because OQ-8 rejection means no third-party catalog source.
+- Extract year (4-digit number), player name (cross-reference the seeded catalog + a maintained player-name list), set name, card number from eBay titles
 - Handle common grade patterns: `PSA 10`, `BGS 9.5`, `Gem Mint 10`
-- Accept imperfect matching — log unmatched titles for review
+- Accept imperfect matching — log unmatched titles for review; the catalog grows as unmatched titles are triaged into new canonical cards
+- **Trade-off accepted:** normalization coverage will be thin outside the seeded scope at launch. Cards outside the seed will show the OQ-5 empty state until manually catalogued or matched by future phases.
 
-**Phase 2:** Fuzzy matching hardening
-- Use fuzzy string matching (e.g., Apache Commons Text `JaroWinklerSimilarity`) against the seeded catalog
-- Supplement the catalog with additional sources (Beckett or community-maintained datasets) where The Card API coverage is thin
+**Phase 2:** Fuzzy matching + catalog expansion
+- Use fuzzy string matching (e.g., Apache Commons Text `JaroWinklerSimilarity`) against the accreting catalog
+- Supplement with community-maintained datasets (Beckett-style, if legally sourceable) as the catalog grows
 
 **Phase 3:** AI-assisted classification
 - Use Claude API as an internal microservice to classify ambiguous titles
@@ -533,19 +654,21 @@ This is the highest-risk component. Recommended phased approach:
 ## 11. Feature Roadmap
 
 ```
-Phase 1 — MVP (Search, Current Market & Accruing Price History)
-├── Evaluate The Card API (coverage, ToS, limits) — decision gate for backfill + catalog seed
-├── Seed card catalog from The Card API identities (resolves OQ-2)
-├── Apply for eBay Marketplace Insights access (parallel, non-blocking)
+Phase 1 — MVP (Search, Current Market & Accruing History)
+├── Hand-curate initial card catalog seed (same scope as OQ-7 tracking seed)
 ├── eBay Browse API integration + OAuth setup
 ├── Active-listing poller: daily observations → floor/ask metrics
+├── card_tracking model + tier-based poll scheduler (seed + demand-driven)
+├── Nightly aging job (SEARCHED → DECAYED → PAUSED)
+├── Nightly retention job (delete expired listing_observation; nullify expired linkback fields)
+├── Daily market_metric_daily aggregation job (compute before listing_observation deletion)
 ├── Inferred-sale detection (fixed-price quantity-sold deltas)
-├── Third-party sold-data backfill job (if The Card API evaluation passes)
 ├── Card normalization (rule-based v1)
 ├── Seed sport lookup table + competitions/events for current season
+├── Idempotent reference-data loader (startup) + weekly events health check
 ├── Card search endpoint
 ├── Current market endpoint (floor, asks, active listings)
-├── Price history endpoint + grade filter (separate SOLD / floor series, incl. event bands)
+├── Price history endpoint + grade filter (SOLD via inferred sales / floor series, incl. event bands)
 ├── React frontend: search page + market view + price chart (with competition date-range bands)
 └── Deploy to staging
 
@@ -569,21 +692,21 @@ Phase 3 — Portfolio & Market Dashboard
 | # | Question | Impact | Status | Resolution |
 |---|---|---|---|---|
 | OQ-1 | Which eBay API tier / plan to register for? | Data ingestion frequency; caps how many listings the poller can track daily | ✅ Resolved | Start on the free developer tier; reassess if/when the poller hits daily call limits. The free-tier quota is the hard budget for the OQ-7 ingestion strategy (verify exact daily limit at app registration). |
-| OQ-2 | Will eBay data alone be sufficient for MVP or do we seed with a card catalog? | Normalization complexity | ✅ Resolved | Seed the card catalog from The Card API's indexed card identities (§5.1.2); eBay titles are matched against this reference rather than parsed in isolation. Contingent on OQ-8 passing. |
+| OQ-2 | Will eBay data alone be sufficient for MVP or do we seed with a card catalog? | Normalization complexity | ✅ Resolved | Rule-based parser + small hand-curated seed catalog. Seed scope matches the OQ-7 tracking seed (a few hundred cards: rookies of the last 3 years in top 4 US sports). See §10 Phase 1. Trade-off accepted: normalization coverage will be thin outside the seeded scope at launch; unmatched titles are logged and triaged into new canonical cards over time. Catalog grows organically as user demand drives new cards into tracking. |
 | OQ-3 | What is the target hosting environment? (Cloud provider, self-hosted?) | Infrastructure planning | 🟡 Partially resolved | Cloud deployment confirmed (not self-hosted). Specific provider deferred — too early in development to commit. Candidates remain Railway, Fly.io, AWS (§9). Revisit before "Deploy to staging" in the Phase 1 roadmap. |
 | OQ-4 | Will the frontend be a separate repo or a monorepo with the backend? | Developer workflow | ✅ Resolved | Separate repositories for frontend (React) and backend (Spring Boot). Implication: the REST API contract is the interface between teams/repos — keep §8 authoritative, and consider generating an OpenAPI spec from the backend so the frontend can code against it. |
-| OQ-5 | How to handle cards with no sales data yet? (Show market view only, empty history state, or hide?) | UX decision — more common now given accrual model | 🔲 Open | |
-| OQ-6 | What is the monetization model? (Free, freemium, subscription?) | Feature gating design | 🔲 Open | |
-| OQ-7 | Ingestion strategy: which cards does the poller track? Catalog-driven (seed popular players/sets), demand-driven (user search triggers tracking), or hybrid? | Rate-limit budget, cold-start UX, chicken-and-egg between search and data | 🔲 Open | |
-| OQ-8 | The Card API evaluation: data provenance, redistribution ToS, per-sport coverage depth, free-tier limits, reliability as a dependency | Whether sold-price backfill is viable at MVP; OQ-2 depends on it | 🔲 Open | |
-| OQ-9 | eBay ToS: are we permitted to store and publicly redisplay listing data long-term? (Separate question from rate limits) | Data retention model; legal exposure | 🔲 Open | |
-| OQ-10 | Marketplace Insights application: do we qualify, and on what timeline? | Long-term official sold-data route | 🔲 Open | |
-| OQ-11 | listing_observation growth management: partitioning vs. rollup aggregation threshold | Storage cost; query performance | 🔲 Open | |
+| OQ-5 | How to handle cards with no sales data yet? | UX decision — more common now given accrual model | ✅ Resolved | Never hide the card. Handle two variants explicitly: **(a) no sold history but active listings exist** — show the current market view normally; the price history chart clearly states "no confirmed sales in this window" and offers related cards for context. **(b) No history AND no active listings** — show "Not tracked yet" state with a watchlist CTA (ties to OQ-7 demand-driven ingestion) plus related cards. **Similarity rule for Phase 1:** same player, same year — adjacent grades of the same card first, then adjacent cards in the same set. Reuses existing catalog data, no new scoring logic. Related cards are labeled as related, never presented as this card's price estimate (same credibility principle as F-07). **API shape:** embed a `relatedCards` array in the existing price history response (§8.2) when the primary series is empty — one round-trip, no new endpoint, consistent with how events are delivered. |
+| OQ-6 | What is the monetization model? (Free, freemium, subscription?) | Feature gating design | ⏸ Deferred | Too early to commit — decision depends on MVP traction and which features prove valuable. Revisit before Phase 2 planning (watchlist/accounts). Implication for now: build MVP as fully free, avoid feature-gating scaffolding that would need to be undone. |
+| OQ-7 | Ingestion strategy: which cards does the poller track? Catalog-driven (seed popular players/sets), demand-driven (user search triggers tracking), or hybrid? | Rate-limit budget, cold-start UX, chicken-and-egg between search and data | ✅ Resolved | **Hybrid, with priority tiers.** (1) **Seed layer** — a small, curated set polled daily from launch (rookies of the last 3 years in the top 4 US sports, ~few hundred cards). Small enough to leave headroom in the OQ-1 free-tier budget. (2) **Demand layer** — cards enter the tracked set on user search or watchlist add (OQ-5 CTA). Watchlist is a stronger engagement signal than search. (3) **Priority tiers** — seeded + watchlisted → daily. Recently-searched → daily for N days, decay to weekly if no further engagement. Dormant → drop out of polling, keep historical observations. (4) **Aging** — a nightly job promotes/demotes cards between tiers based on `last_engagement_at`. Requires a new `card_tracking` model (§7.10). Naturally bounds `listing_observation` growth (helps OQ-11). Initial seed selection is a taste call — keep it small and defensible; let the demand layer fill in the long tail. |
+| OQ-8 | The Card API evaluation: data provenance, redistribution ToS, per-sport coverage depth, free-tier limits, reliability as a dependency | Whether sold-price backfill is viable at MVP; OQ-2 depends on it | ❌ Rejected | **Evaluated and rejected.** Free tier (5k records/day, 3-day lookback) is technically workable, but ToS §7 explicitly disclaims that use of the data complies with eBay or other marketplace terms and shifts compliance risk to us. The underlying data is scraped from public marketplace sources without licensing arrangements. Not defensible for a public product; also creates a business-continuity risk (source could disappear if the aggregator gets pushed back on). Consequence: OQ-2 reopens; no sold-price backfill in MVP. Sold data will accrue only from our own inferred-sales pipeline (§5.1.1) until/unless OQ-10 (Marketplace Insights) lands. |
+| OQ-9 | eBay ToS: are we permitted to store and publicly redisplay listing data long-term? (Separate question from rate limits) | Data retention model; legal exposure | ✅ Resolved | **No long-term storage of raw listing data.** eBay's terms permit retention "as required" for the operational purpose, then require disposal. We define our own windows tied to purpose (see §5.4). **Architectural split:** (a) **Raw listing data** (`listing_observation` rows, `raw_title`/`external_url`/`external_id` fields) is **transient** — kept only long enough to compute daily aggregates and detect inferred sales, then deleted or nullified. (b) **Derived data** (daily floor/median/count aggregates in `market_metric_daily` §7.11, and price/timestamp/card/grade tuples in `price_snapshot`) is **permanent** — these are our observations *about* the market, not republished listings. Consequence: F-08 relaxes to linkback within the retention window only. Strengthens the moat: our persistent dataset is entirely computed by us, not scraped content. Also eases OQ-11 significantly (`listing_observation` no longer grows unbounded). |
+| OQ-10 | Marketplace Insights application: do we qualify, and on what timeline? | Long-term official sold-data route | ⏸ Deferred | Not pursued for MVP. First iteration ships on Browse API alone (active listings + inferred sales from quantity deltas). Revisit if/when (a) inferred-sales coverage proves too thin to be useful, (b) users demand deep historical data, or (c) the product reaches a scale where the limited-release application has better odds. Consequence: **sold data in MVP comes exclusively from inferred sales.** No fallback source; if fixed-price inference is thin for a card category, the price history for that category will be sparse. |
+| OQ-11 | listing_observation growth management: partitioning vs. rollup aggregation threshold | Storage cost; query performance | ✅ Resolved | Resolved as a consequence of OQ-9. `listing_observation` is now transient (7-day rolling window, §5.4), so unbounded growth is no longer a concern. Permanent storage is `market_metric_daily` (§7.11), which grows predictably at cards × grades × days and is bounded further by OQ-7 aging. Partitioning deferred until measurements justify it. |
 | OQ-12 | Sport categorization: Postgres ENUM vs. lookup table? | Schema extensibility | ✅ Resolved (restored) | Lookup table `sport` with metadata columns; card FK `sport_id`; API keeps human-readable codes. See §7.2. |
 | OQ-13 | Event overlays: separate endpoint or embedded in price history? Points or ranges? | API shape; chart UX | ✅ Resolved (restored) | Shaded date-range bands, delivered inside the price history response. See §7.8–7.9, §8.2. |
 | OQ-14 | How do multi-sport events (Olympics) attach to cards? | Event selection logic | ✅ Resolved (restored) | `multi` sport code; `multi` events display on all cards regardless of sport. See §7.8. |
-| OQ-15 | Who maintains `competition_event` date ranges? (Manual seed per season vs. an external schedule source) | Data maintenance burden | 🔲 Open | |
+| OQ-15 | Who maintains `competition_event` date ranges? (Manual seed per season vs. an external schedule source) | Data maintenance burden | ✅ Resolved | **Manual maintenance, via PR.** ~5–6 new event rows per year across the seeded competitions — burden too small to justify an external integration (sport-specific APIs, mostly paid, added moving parts). Events live as reference data in the repo (`seeds/competition_events.yml` or `.sql`), added as PRs when seasons are announced; `git log` doubles as an audit trail. **Loader:** an idempotent reference-data loader runs on app startup, upserting into `competition_event`. Kept separate from Flyway migrations (schema vs. reference data are different concerns). **Forgetting-safety:** a weekly scheduled job warns if any active competition has fewer than N future events within the next M months (defaults in `app_setting`); logs a warning for MVP, upgrades to an alert once observability is in place. **Stage granularity:** MVP uses one date-range band per competition instance; splitting stages (Group / Knockouts / Finals) is a Phase 2+ refinement if user feedback justifies it. |
 
 ---
 
-*Document version 1.8 — Planning phase. v1.1: corrected eBay sold-data assumption; adopted hybrid data strategy (active-listing ingestion + inferred sales + third-party sold-data backfill); added listing_observation model, current-market endpoint, and price-type discipline. v1.2: resolved OQ-2 — card catalog seeded from The Card API identities; normalization strategy updated accordingly. v1.3: restored previously-resolved decisions lost in a doc-version regression — sport lookup table (§7.2), competition event overlays (§7.8–7.9, §8.2), and their resolved OQs (OQ-12..14). v1.4: resolved OQ-1 — start on the free eBay developer tier, reassess at scale. v1.5: restructured the open questions table with Status and Resolution columns. v1.6: OQ-3 partially resolved — cloud deployment confirmed, provider choice deferred. v1.7: resolved OQ-4 — frontend and backend live in separate repositories. v1.8: project renamed to Collector Market; added §9.1 repository structure (private repos, planning doc at collector-market-backend/docs/planning.md).*
+*Document version 1.17 — Planning phase. v1.1: corrected eBay sold-data assumption; adopted hybrid data strategy (active-listing ingestion + inferred sales + third-party sold-data backfill); added listing_observation model, current-market endpoint, and price-type discipline. v1.2: resolved OQ-2 — card catalog seeded from The Card API identities; normalization strategy updated accordingly. v1.3: restored previously-resolved decisions lost in a doc-version regression — sport lookup table (§7.2), competition event overlays (§7.8–7.9, §8.2), and their resolved OQs (OQ-12..14). v1.4: resolved OQ-1 — start on the free eBay developer tier, reassess at scale. v1.5: restructured the open questions table with Status and Resolution columns. v1.6: OQ-3 partially resolved — cloud deployment confirmed, provider choice deferred. v1.7: resolved OQ-4 — frontend and backend live in separate repositories. v1.8: project renamed to Collector Market; added §9.1 repository structure (private repos, planning doc at collector-market-backend/docs/planning.md). v1.9: resolved OQ-5 — explicit empty state + related cards (same player, adjacent grades/cards); added F-11 and relatedCards field to price history response. v1.10: OQ-6 deferred — monetization decision revisited before Phase 2. v1.11: resolved OQ-7 — hybrid ingestion (seed + demand + tiers); added card_tracking model (§7.10); noted partial relief for OQ-11. v1.12: rejected OQ-8 (The Card API — ToS incompatible with public product); reopened OQ-2; adopted accrual-only data model; MVP framing, F-04, §5.1.2, §10 normalization, and roadmap all updated accordingly. v1.13: OQ-10 deferred — MVP ships on Browse API alone; Marketplace Insights not pursued for first iteration. v1.14: OQ-2 closed — rule-based parser + hand-curated seed catalog (already detailed in §10 Phase 1). v1.15: resolved OQ-9 with retention policy (§5.4); added market_metric_daily table (§7.11); relaxed F-08; closed OQ-11 as a consequence; roadmap gained retention + aggregation jobs. v1.16: formalized configuration split — retention windows in application.yml, operational tuning knobs in new app_setting table (§7.12); added decision row in §9. v1.17: closed OQ-15 — competition events maintained manually via PR with reference-data loader + weekly health check. All planning-phase open questions now resolved, partially resolved, deferred, or rejected.*
