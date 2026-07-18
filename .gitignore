@@ -22,7 +22,7 @@ Thumbs.db
 .env
 .env.*
 application-local.yml
-application-local.properties
+application-credentials.yml
 
 # Logs
 *.log
