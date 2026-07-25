@@ -119,13 +119,13 @@ Reference-data loader (OQ-15):
 **Prereqs:** M2.
 **Objective:** Rule-based parser + hand-curated seed catalog (§10 Phase 1, OQ-2).
 
-- [ ] Hand-curate initial seed catalog (~a few hundred rows: rookies of the last 3 years in top 4 US sports) as YAML
-- [ ] Seed loader for the `card` table
-- [ ] Title parser: extract year (4-digit), player name (lookup against catalog + player list), set name, card number
-- [ ] Grade normalizer: recognize `PSA 10`, `BGS 9.5`, `SGC 10`, `Gem Mint 10`, raw
-- [ ] Match strategy: exact catalog hit → canonical card ID; unmatched → logged for triage
-- [ ] `unmatched_listing` staging table (not in §7 — add a migration `V010__unmatched_listing.sql`)
-- [ ] Unit tests with representative eBay title fixtures (pull real examples)
+- [ ] Hand-curate initial seed catalog (~a few hundred rows: rookies of the last 3 years in top 4 US sports) as YAML — **draft ready at `seeds/cards.yml` (159 rows), pending your review before commit**
+- [x] Seed loader for the `card` table
+- [x] Title parser: extract year (4-digit), player name (lookup against catalog + player list), set name, card number
+- [x] Grade normalizer: recognize `PSA 10`, `BGS 9.5`, `SGC 10`, `Gem Mint 10`, raw
+- [x] Match strategy: exact catalog hit → canonical card ID; unmatched → logged for triage
+- [x] `unmatched_listing` staging table (not in §7 — added as `V011__unmatched_listing.sql`; V010 was already taken by M3's api_call_counter)
+- [x] Unit tests with representative eBay title fixtures (pull real examples)
 
 **DoD:** a batch of 50 representative eBay titles yields canonical card IDs for the seeded scope and logged unmatched rows for the rest.
 
