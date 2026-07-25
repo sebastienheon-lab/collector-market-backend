@@ -78,7 +78,7 @@ Living checklist for taking the Phase 1 MVP from planning to staging. Each miles
 
 Migrations (one file per table for readable git history):
 
-- [ ] `V001__sport.sql` — §7.2 + seed rows (baseball, football, basketball, hockey, multi)
+- [x] `V001__sport.sql` — §7.2 + seed rows (baseball, football, basketball, hockey, multi)
 - [ ] `V002__card.sql` — §7.1
 - [ ] `V003__price_snapshot.sql` — §7.3 (incl. unique dedup index)
 - [ ] `V004__listing_observation.sql` — §7.4
