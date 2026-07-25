@@ -84,7 +84,7 @@ Migrations (one file per table for readable git history):
 - [x] `V004__listing_observation.sql` — §7.4
 - [x] `V005__sport_competition.sql` — §7.8 + seed rows (World Cup, NFL Playoffs, UCL, Olympics, NBA Playoffs, MLB Postseason)
 - [x] `V006__competition_event.sql` — §7.9
-- [ ] `V007__card_tracking.sql` — §7.10
+- [x] `V007__card_tracking.sql` — §7.10
 - [ ] `V008__market_metric_daily.sql` — §7.11
 - [ ] `V009__app_setting.sql` — §7.12 + defaults (OQ-7 thresholds, OQ-15 event health-check knobs)
 
