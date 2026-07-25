@@ -31,10 +31,10 @@ Living checklist for taking the Phase 1 MVP from planning to staging. Each miles
 
 ### Accounts
 
-- [ ] **eBay developer account** at https://developer.ebay.com (OQ-1: free tier)
-  - [ ] Create an application; capture App ID (Client ID) and Cert ID (Client Secret)
-  - [ ] Record the daily Browse API call quota — this is the OQ-7 ingestion budget
-  - [ ] Store credentials in a password manager; **never commit them**
+- [x] **eBay developer account** at https://developer.ebay.com (OQ-1: free tier)
+  - [x] Create an application; capture App ID (Client ID) and Cert ID (Client Secret)
+  - [x] Record the daily Browse API call quota — this is the OQ-7 ingestion budget
+  - [x] Store credentials in a password manager; **never commit them**
 
 ### Local infrastructure
 
