@@ -22,6 +22,22 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
+# §5.1.1 / OQ-1: eBay Browse API. client-id/client-secret come from the gitignored
+# credentials profile; oauth-token-url/api-base-url are environment-specific (see
+# application-dev.yml for the sandbox endpoints).
+ebay:
+  daily-call-limit: 5000 # free-tier default, confirmed via eBay developer docs (M3)
+  connect-timeout-ms: 5000
+  response-timeout-ms: 10000
+  retry:
+    max-attempts: 3
+    min-backoff-ms: 500
+    max-backoff-ms: 8000
+  category:
+    # "Sports Trading Card Singles" - leaf category under 212 (Sports Trading Cards) / 64482
+    # (Sports Mem, Cards & Fan Shop). Verified against live eBay category browse pages (M3).
+    trading-card-singles: "261328"
+
 management:
   endpoints:
     web:
