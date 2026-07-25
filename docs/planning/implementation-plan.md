@@ -90,8 +90,8 @@ Migrations (one file per table for readable git history):
 
 Reference-data loader (OQ-15):
 
-- [ ] Idempotent startup loader (separate from Flyway) for `sport_competition` and `competition_event`
-- [ ] Seed files under `src/main/resources/seeds/` (YAML preferred)
+- [x] Idempotent startup loader (separate from Flyway) for `sport_competition` and `competition_event`
+- [x] Seed files under `src/main/resources/seeds/` (YAML preferred)
 
 **DoD:** `mvn flyway:migrate` produces the full schema; `SELECT count(*) FROM sport` returns 6 (baseball, football, basketball, hockey, soccer, multi — soccer added to cover the FIFA World Cup / UEFA Champions League seed competitions in §7.8).
 

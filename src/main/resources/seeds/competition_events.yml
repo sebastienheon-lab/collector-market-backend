@@ -1,0 +1,15 @@
+# §7.9 / OQ-15 reference data — specific competition instances/stages.
+# Intentionally starts empty: event date ranges are added via PR "when seasons
+# are announced" (OQ-15), and should come from a verified schedule source
+# rather than be guessed at seed time. The weekly events health check
+# (events.min_future_events / events.check_horizon_months in app_setting)
+# will warn once a competition is short on upcoming events — that's expected
+# until real dates are added here.
+#
+# Row shape once populated:
+# - competitionId: 1        # references sport_competition.id (see sport_competitions.yml)
+#   label: "2026 MLB Postseason"
+#   stage: null              # optional, e.g. "Group Stage", "Finals"
+#   startDate: "2026-09-29"
+#   endDate: "2026-11-01"
+[]

@@ -1,0 +1,28 @@
+# §7.8 / OQ-15 reference data — named recurring competitions.
+# Mirrors V005__sport_competition.sql's initial seed; edited via PR when the
+# roster of tracked competitions changes. Loaded idempotently at startup by
+# ReferenceDataLoader (upsert on id).
+- id: 1
+  sportCode: baseball
+  name: MLB Postseason
+  active: true
+- id: 2
+  sportCode: football
+  name: NFL Playoffs
+  active: true
+- id: 3
+  sportCode: basketball
+  name: NBA Playoffs
+  active: true
+- id: 4
+  sportCode: soccer
+  name: FIFA World Cup
+  active: true
+- id: 5
+  sportCode: soccer
+  name: UEFA Champions League
+  active: true
+- id: 6
+  sportCode: multi
+  name: Olympics
+  active: true
