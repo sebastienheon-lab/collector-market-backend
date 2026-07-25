@@ -12,4 +12,5 @@ INSERT INTO sport (id, code, display_name, icon_key, is_active) VALUES
     (2, 'football',   'Football',   'football',   TRUE),
     (3, 'basketball', 'Basketball', 'basketball', TRUE),
     (4, 'hockey',     'Hockey',     'hockey',     TRUE),
-    (5, 'multi',      'Multi-Sport', NULL,        TRUE);
+    (5, 'soccer',     'Soccer',     'soccer',     TRUE),
+    (6, 'multi',      'Multi-Sport', NULL,        TRUE);

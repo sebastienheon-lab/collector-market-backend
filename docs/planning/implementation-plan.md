@@ -78,7 +78,7 @@ Living checklist for taking the Phase 1 MVP from planning to staging. Each miles
 
 Migrations (one file per table for readable git history):
 
-- [x] `V001__sport.sql` — §7.2 + seed rows (baseball, football, basketball, hockey, multi)
+- [x] `V001__sport.sql` — §7.2 + seed rows (baseball, football, basketball, hockey, soccer, multi)
 - [x] `V002__card.sql` — §7.1
 - [x] `V003__price_snapshot.sql` — §7.3 (incl. unique dedup index)
 - [x] `V004__listing_observation.sql` — §7.4
@@ -93,7 +93,7 @@ Reference-data loader (OQ-15):
 - [ ] Idempotent startup loader (separate from Flyway) for `sport_competition` and `competition_event`
 - [ ] Seed files under `src/main/resources/seeds/` (YAML preferred)
 
-**DoD:** `mvn flyway:migrate` produces the full schema; `SELECT count(*) FROM sport` returns 5.
+**DoD:** `mvn flyway:migrate` produces the full schema; `SELECT count(*) FROM sport` returns 6 (baseball, football, basketball, hockey, soccer, multi — soccer added to cover the FIFA World Cup / UEFA Champions League seed competitions in §7.8).
 
 ---
 
