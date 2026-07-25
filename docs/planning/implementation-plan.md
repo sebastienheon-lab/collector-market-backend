@@ -102,13 +102,13 @@ Reference-data loader (OQ-15):
 **Prereqs:** M1. Can run in parallel with M2.
 **Objective:** Authenticated WebClient wrapper that respects rate limits.
 
-- [ ] OAuth 2.0 Client Credentials flow (cache token, auto-refresh before expiry)
-- [ ] `WebClient` bean: base URL, timeouts, exponential backoff on 429/5xx
-- [ ] `EbayBrowseClient`: `searchItems(query, category, filters)` and `getItem(itemId)`
-- [ ] Daily call counter with midnight reset — hard-stop when approaching the OQ-1 free-tier limit
-- [ ] Response mapping to internal DTOs (avoid leaking eBay JSON shape into services)
-- [ ] Recorded fixtures for integration tests (do not burn live quota in CI)
-- [ ] Log every call with a request-cost tag
+- [x] OAuth 2.0 Client Credentials flow (cache token, auto-refresh before expiry)
+- [x] `WebClient` bean: base URL, timeouts, exponential backoff on 429/5xx
+- [x] `EbayBrowseClient`: `searchItems(query, category, filters)` and `getItem(itemId)`
+- [x] Daily call counter with midnight reset — hard-stop when approaching the OQ-1 free-tier limit
+- [x] Response mapping to internal DTOs (avoid leaking eBay JSON shape into services)
+- [x] Recorded fixtures for integration tests (do not burn live quota in CI)
+- [x] Log every call with a request-cost tag
 
 **DoD:** `EbayBrowseClient.searchItems("2018 Topps Ohtani", tradingCardsCategoryId)` returns parsed DTOs from the live API in a smoke test.
 
