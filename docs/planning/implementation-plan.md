@@ -82,7 +82,7 @@ Migrations (one file per table for readable git history):
 - [x] `V002__card.sql` — §7.1
 - [x] `V003__price_snapshot.sql` — §7.3 (incl. unique dedup index)
 - [x] `V004__listing_observation.sql` — §7.4
-- [ ] `V005__sport_competition.sql` — §7.8 + seed rows (World Cup, NFL Playoffs, UCL, Olympics, NBA Playoffs, MLB Postseason)
+- [x] `V005__sport_competition.sql` — §7.8 + seed rows (World Cup, NFL Playoffs, UCL, Olympics, NBA Playoffs, MLB Postseason)
 - [ ] `V006__competition_event.sql` — §7.9
 - [ ] `V007__card_tracking.sql` — §7.10
 - [ ] `V008__market_metric_daily.sql` — §7.11
