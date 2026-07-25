@@ -30,20 +30,23 @@ public class TitleParser {
             new BrandSetRule(Pattern.compile("prizm", Pattern.CASE_INSENSITIVE), "Panini", "Prizm"),
             new BrandSetRule(Pattern.compile("topps\\s+basketball", Pattern.CASE_INSENSITIVE), "Topps", "Basketball"));
 
-    // Parallel/color indicators - a hit here means the listing is NOT the plain base card the
-    // seed catalog carries, so it's routed to unmatched-listing for triage rather than silently
-    // matched onto the base card's id.
-    private static final Set<String> PARALLEL_KEYWORDS = Set.of(
+    // Parallel/color/insert/relic indicators - a hit here means the listing is NOT the plain
+    // base card the seed catalog carries, so it's routed to unmatched-listing for triage rather
+    // than silently matched onto the base card's id. Widened beyond parallel colors after
+    // checking real listing titles during M4 (e.g. "Rookie Auto PSA 10" would otherwise
+    // false-match the base card whenever the title has no #cardNumber to disambiguate).
+    private static final Set<String> VARIANT_KEYWORDS = Set.of(
             "silver", "gold", "green", "blue", "red", "orange", "purple", "black", "pink",
             "refractor", "xfractor", "shimmer", "sepia", "mojo", "pulsar", "camo", "wave",
-            "kaboom", "hyper", "scope", "disco", "choice");
+            "kaboom", "hyper", "scope", "disco", "choice",
+            "auto", "autograph", "autographed", "relic", "patch", "jersey", "memorabilia", "jumbo");
 
     public ParsedTitle parse(String rawTitle, Set<String> knownPlayerNames) {
         Integer year = extractYear(rawTitle);
         String cardNumber = extractCardNumber(rawTitle);
         BrandSetRule brandSet = extractBrandSet(rawTitle);
         String playerName = matchPlayerName(rawTitle, knownPlayerNames);
-        boolean parallel = containsParallelKeyword(rawTitle);
+        boolean variant = containsVariantKeyword(rawTitle);
         GradeInfo grade = GradeNormalizer.extract(rawTitle);
 
         return new ParsedTitle(
@@ -54,7 +57,7 @@ public class TitleParser {
                 cardNumber,
                 grade.gradeSource(),
                 grade.gradeValue(),
-                parallel);
+                variant);
     }
 
     private Integer extractYear(String title) {
@@ -83,9 +86,9 @@ public class TitleParser {
         return null;
     }
 
-    private boolean containsParallelKeyword(String title) {
+    private boolean containsVariantKeyword(String title) {
         String normalized = normalize(title);
-        for (String keyword : PARALLEL_KEYWORDS) {
+        for (String keyword : VARIANT_KEYWORDS) {
             if (containsWord(normalized, keyword)) {
                 return true;
             }

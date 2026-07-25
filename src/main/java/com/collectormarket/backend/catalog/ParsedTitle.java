@@ -9,5 +9,5 @@ public record ParsedTitle(
         String cardNumber,
         String gradeSource,
         String gradeValue,
-        boolean parallelDetected) {
+        boolean variantDetected) {
 }

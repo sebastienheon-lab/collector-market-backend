@@ -15,8 +15,12 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Idempotent startup loader for the hand-curated card catalog seed (§10 Phase 1, OQ-2).
  * Mirrors {@code ReferenceDataLoader}'s pattern: reads YAML under {@code src/main/resources/seeds/},
- * skips rows that already exist by natural key rather than a DB-level upsert (no unique
- * constraint on the card table beyond its UUID PK - see M2 for why that's the schema as given).
+ * upserting by natural key rather than a DB-level upsert (no unique constraint on the card
+ * table beyond its UUID PK - see M2 for why that's the schema as given).
+ * <p>
+ * Natural key is (player, year, brand, set) only - NOT cardNumber. cardNumber starts null for
+ * most rows and gets filled in as real numbers are confirmed; if it were part of the key, a
+ * later correction would insert a duplicate row instead of updating the existing one.
  */
 @Component
 public class CardSeedLoader implements ApplicationRunner {
@@ -45,17 +49,14 @@ public class CardSeedLoader implements ApplicationRunner {
         String sportCode = (String) row.get("sportCode");
         boolean isRookie = Boolean.TRUE.equals(row.get("isRookie"));
 
-        Boolean exists = jdbcTemplate.queryForObject("""
-                SELECT EXISTS (
-                    SELECT 1 FROM card
-                    WHERE player_name = ? AND year = ?
-                      AND brand IS NOT DISTINCT FROM ?
-                      AND set_name IS NOT DISTINCT FROM ?
-                      AND card_number IS NOT DISTINCT FROM ?
-                )
-                """, Boolean.class, playerName, year, brand, setName, cardNumber);
+        int updated = jdbcTemplate.update("""
+                UPDATE card
+                SET card_number = ?, sport_id = (SELECT id FROM sport WHERE code = ?), is_rookie = ?
+                WHERE player_name = ? AND year = ?
+                  AND brand IS NOT DISTINCT FROM ? AND set_name IS NOT DISTINCT FROM ?
+                """, cardNumber, sportCode, isRookie, playerName, year, brand, setName);
 
-        if (Boolean.TRUE.equals(exists)) {
+        if (updated > 0) {
             return;
         }
 

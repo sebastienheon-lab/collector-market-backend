@@ -37,7 +37,7 @@ public class UnmatchedListingRecorder {
         fields.put("cardNumber", parsed.cardNumber());
         fields.put("gradeSource", parsed.gradeSource());
         fields.put("gradeValue", parsed.gradeValue());
-        fields.put("parallelDetected", parsed.parallelDetected());
+        fields.put("variantDetected", parsed.variantDetected());
         return fields;
     }
 }

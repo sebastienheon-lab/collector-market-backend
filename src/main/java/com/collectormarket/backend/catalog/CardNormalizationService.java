@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component;
 /**
  * Entry point for turning a raw eBay listing title into a canonical card id (§10 Phase 1).
  * Parses the title, then attempts an exact match against the seeded catalog; anything that
- * doesn't resolve - including titles that clearly reference a non-base parallel - is logged to
- * {@code unmatched_listing} for later triage rather than dropped.
+ * doesn't resolve - including titles that clearly reference a non-base variant (parallel,
+ * autograph, relic, etc.) - is logged to {@code unmatched_listing} for later triage rather than
+ * dropped.
  */
 @Component
 public class CardNormalizationService {
@@ -30,7 +31,7 @@ public class CardNormalizationService {
         Set<String> knownPlayerNames = catalogLookup.allPlayerNames();
         ParsedTitle parsed = titleParser.parse(rawTitle, knownPlayerNames);
 
-        Optional<UUID> matchedCardId = parsed.parallelDetected()
+        Optional<UUID> matchedCardId = parsed.variantDetected()
                 ? Optional.empty()
                 : catalogLookup.findExactMatch(parsed);
 
