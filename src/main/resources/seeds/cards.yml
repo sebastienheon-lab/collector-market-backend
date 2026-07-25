@@ -1,0 +1,1014 @@
+# Card catalog seed - first-pass draft for review (planning.md §10 Phase 1, OQ-2).
+# Scope: BASE cards only, top rookies of the 2023-2025 classes, top 4 US sports, one flagship
+# product per player. Parallels are intentionally excluded here - they enter the catalog
+# organically via unmatched-listing triage (§10) once real listings surface demand for them.
+#
+# THIS IS A DRAFT. Flagged explicitly for review before commit:
+#   - cardNumber is populated only where a real number was confirmed during M4 research
+#     (Corbin Carroll #95, Victor Wembanyama #136, C.J. Stroud #339, Connor Bedard #451,
+#     Cooper Flagg #201, Travis Hunter #301, Shedeur Sanders #302, Cutter Gauthier #212,
+#     Logan Stankoven #244). Every other cardNumber is omitted (null) rather than guessed -
+#     verify against official checklists (Beckett/CardboardConnection/Topps) before relying on
+#     cardNumber-based matching for these rows.
+#   - MLB uses "Topps Chrome" (brand=Topps, setName=Chrome) uniformly for the player's rookie
+#     season, not "Bowman Chrome" prospect cards (those predate MLB debut and would carry a
+#     different, earlier year) - Bowman Chrome variants can be triaged in later if wanted.
+#   - NBA: Panini lost the NBA license as of Oct 2025 (Fanatics/Topps now holds it). 2023 and
+#     2024 NBA rookies use Panini Prizm as originally planned; 2025 NBA rookies use 2025-26
+#     Topps Basketball instead (brand=Topps) - decided during this session.
+#   - NFL 2025 still uses Panini Prizm - it shipped as Panini's final licensed NFL release
+#     (Feb 2026) before Fanatics takes over, so the 2025 draft class has a real Prizm checklist.
+#   - 2025 rookie-class entries (all sports) are lower-confidence than 2023/2024 - fewer of them
+#     are included here for that reason rather than padding the list.
+#   - Total lands around ~160 cards, short of the ~225 target - accuracy was prioritized over
+#     hitting the round number. Easy to extend once reviewed.
+#
+# Idempotent upsert key (see CardSeedLoader): playerName + year + brand + setName + cardNumber.
+
+cards:
+  # ---------------------------------------------------------------------------------------
+  # MLB - Topps Chrome, rookie season
+  # ---------------------------------------------------------------------------------------
+  - playerName: "Corbin Carroll"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    cardNumber: "95"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Gunnar Henderson"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Josh Jung"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Anthony Volpe"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jordan Walker"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "James Outman"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Spencer Steer"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Kodai Senga"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Masataka Yoshida"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Triston Casas"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Matt McLain"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Elly De La Cruz"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Gabriel Moreno"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Nolan Jones"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Ronny Mauricio"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Eury Perez"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Bobby Miller"
+    year: 2023
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+
+  - playerName: "Jackson Holliday"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jackson Merrill"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Paul Skenes"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Pete Crow-Armstrong"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Junior Caminero"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Wyatt Langford"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Yoshinobu Yamamoto"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Masyn Winn"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Colton Cowser"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jordan Westburg"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Heston Kjerstad"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jung Hoo Lee"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Dylan Crews"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jared Jones"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Spencer Schwellenbach"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Shota Imanaga"
+    year: 2024
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+
+  - playerName: "Nick Kurtz"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Roki Sasaki"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jacob Wilson"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Cam Smith"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Drake Baldwin"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Agustin Ramirez"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Kristian Campbell"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+  - playerName: "Jacob Misiorowski"
+    year: 2025
+    brand: "Topps"
+    setName: "Chrome"
+    sportCode: baseball
+    isRookie: true
+
+  # ---------------------------------------------------------------------------------------
+  # NBA - Panini Prizm (2023/2024); 2025 uses Topps Basketball (NBA license moved, see note above)
+  # ---------------------------------------------------------------------------------------
+  - playerName: "Victor Wembanyama"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    cardNumber: "136"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Scoot Henderson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Brandon Miller"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Amen Thompson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Ausar Thompson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Cam Whitmore"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Jaime Jaquez Jr."
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Bilal Coulibaly"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Jarace Walker"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Keyonte George"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Anthony Black"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Gradey Dick"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Dereck Lively II"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Brice Sensabaugh"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "GG Jackson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Jordan Hawkins"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Kobe Bufkin"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Cason Wallace"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+
+  - playerName: "Zaccharie Risacher"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Alexandre Sarr"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Reed Sheppard"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Stephon Castle"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Donovan Clingan"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Zach Edey"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Dalton Knecht"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Matas Buzelis"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Tidjane Salaun"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Rob Dillingham"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Ron Holland"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Jared McCain"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Kel'el Ware"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Yves Missi"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Isaiah Collier"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Bub Carrington"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Devin Carter"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: basketball
+    isRookie: true
+
+  - playerName: "Cooper Flagg"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    cardNumber: "201"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Dylan Harper"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "VJ Edgecombe"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Kon Knueppel"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Ace Bailey"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Cedric Coward"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Derik Queen"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Egor Demin"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Tre Johnson"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Khaman Maluach"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Jeremiah Fears"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Kasparas Jakucionis"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Noa Essengue"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+  - playerName: "Collin Murray-Boyles"
+    year: 2025
+    brand: "Topps"
+    setName: "Basketball"
+    sportCode: basketball
+    isRookie: true
+
+  # ---------------------------------------------------------------------------------------
+  # NFL - Panini Prizm
+  # ---------------------------------------------------------------------------------------
+  - playerName: "Bryce Young"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "C.J. Stroud"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    cardNumber: "339"
+    sportCode: football
+    isRookie: true
+  - playerName: "Anthony Richardson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Will Levis"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Jaxon Smith-Njigba"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Bijan Robinson"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Jahmyr Gibbs"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Puka Nacua"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Sam LaPorta"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Tank Dell"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Zay Flowers"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Will Anderson Jr."
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Devon Witherspoon"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Quentin Johnston"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Jordan Addison"
+    year: 2023
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+
+  - playerName: "Jayden Daniels"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Caleb Williams"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Drake Maye"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Marvin Harrison Jr."
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Malik Nabers"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Rome Odunze"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Brian Thomas Jr."
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Xavier Worthy"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Xavier Legette"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Bucky Irving"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Brock Bowers"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Ladd McConkey"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Jonathon Brooks"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "J.J. McCarthy"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Michael Penix Jr."
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Bo Nix"
+    year: 2024
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+
+  - playerName: "Travis Hunter"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    cardNumber: "301"
+    sportCode: football
+    isRookie: true
+  - playerName: "Shedeur Sanders"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    cardNumber: "302"
+    sportCode: football
+    isRookie: true
+  - playerName: "Ashton Jeanty"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Cam Ward"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Tetairoa McMillan"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Colston Loveland"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Cam Skattebo"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Matthew Golden"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "TreVeyon Henderson"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Will Campbell"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Mason Graham"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Abdul Carter"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Kelvin Banks Jr."
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Armand Membou"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Tyler Warren"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Malaki Starks"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "Omarion Hampton"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+  - playerName: "RJ Harvey"
+    year: 2025
+    brand: "Panini"
+    setName: "Prizm"
+    sportCode: football
+    isRookie: true
+
+  # ---------------------------------------------------------------------------------------
+  # NHL - Upper Deck Young Guns
+  # ---------------------------------------------------------------------------------------
+  - playerName: "Adam Fantilli"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Devon Levi"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Logan Cooley"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Marco Rossi"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Simon Nemec"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Luke Hughes"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Connor Bedard"
+    year: 2023
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    cardNumber: "451"
+    sportCode: hockey
+    isRookie: true
+
+  - playerName: "Macklin Celebrini"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Cutter Gauthier"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    cardNumber: "212"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Logan Stankoven"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    cardNumber: "244"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Lane Hutson"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Matt Rempe"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Josh Doan"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Mavrik Bourque"
+    year: 2024
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+
+  - playerName: "Ivan Demidov"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Artyom Levshunov"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Gabe Perreault"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Matthew Schaefer"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Michael Misa"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
+  - playerName: "Easton Cowan"
+    year: 2025
+    brand: "Upper Deck"
+    setName: "Young Guns"
+    sportCode: hockey
+    isRookie: true
