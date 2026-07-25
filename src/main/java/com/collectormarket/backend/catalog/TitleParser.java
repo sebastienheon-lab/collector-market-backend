@@ -36,10 +36,19 @@ public class TitleParser {
     // checking real listing titles during M4 (e.g. "Rookie Auto PSA 10" would otherwise
     // false-match the base card whenever the title has no #cardNumber to disambiguate).
     private static final Set<String> VARIANT_KEYWORDS = Set.of(
-            "silver", "gold", "green", "blue", "red", "orange", "purple", "black", "pink",
+            "silver", "gold", "green", "red", "orange", "purple", "black", "pink",
             "refractor", "xfractor", "shimmer", "sepia", "mojo", "pulsar", "camo", "wave",
-            "kaboom", "hyper", "scope", "disco", "choice",
-            "auto", "autograph", "autographed", "relic", "patch", "jersey", "memorabilia", "jumbo");
+            "kaboom", "hyper", "scope", "disco", "choice", "parallel",
+            "auto", "autograph", "autographed", "relic", "patch", "memorabilia", "jumbo");
+
+    // "blue" and "jersey" are excluded from the plain word-list above because they collide with
+    // real team names as bare words (Columbus Blue Jackets; New Jersey Devils) - real listing
+    // fixtures caught this. Require them to appear in an actually variant-indicating phrase instead.
+    private static final Pattern BLUE_VARIANT_PATTERN =
+            Pattern.compile("\\bblue\\s+(prizm|refractor|xfractor|wave|scope|pulsar|mojo|hyper)\\b",
+                    Pattern.CASE_INSENSITIVE);
+    private static final Pattern JERSEY_VARIANT_PATTERN =
+            Pattern.compile("\\bjersey\\s+(patch|number|card|swatch)\\b", Pattern.CASE_INSENSITIVE);
 
     public ParsedTitle parse(String rawTitle, Set<String> knownPlayerNames) {
         Integer year = extractYear(rawTitle);
@@ -93,7 +102,7 @@ public class TitleParser {
                 return true;
             }
         }
-        return false;
+        return BLUE_VARIANT_PATTERN.matcher(title).find() || JERSEY_VARIANT_PATTERN.matcher(title).find();
     }
 
     private String matchPlayerName(String title, Set<String> knownPlayerNames) {
