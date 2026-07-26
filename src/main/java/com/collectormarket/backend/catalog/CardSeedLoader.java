@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,12 @@ import org.yaml.snakeyaml.Yaml;
  * Natural key is (player, year, brand, set) only - NOT cardNumber. cardNumber starts null for
  * most rows and gets filled in as real numbers are confirmed; if it were part of the key, a
  * later correction would insert a duplicate row instead of updating the existing one.
+ * <p>
+ * Ordered before {@code CardTracker} (M5), which seed-tracks any card lacking a
+ * {@code card_tracking} row on startup and needs this loader's rows to exist first.
  */
 @Component
+@Order(1)
 public class CardSeedLoader implements ApplicationRunner {
 
     private static final String CARDS_SEED = "seeds/cards.yml";
