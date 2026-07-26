@@ -136,30 +136,30 @@ Reference-data loader (OQ-15):
 **Prereqs:** M2, M3, M4.
 **Objective:** Phase 1 roadmap ingestion jobs from §11 wired up end-to-end.
 
-- [ ] `CardTracker` service — reads/writes `card_tracking` per §7.10 lifecycle
-  - [ ] Insert on user search (`SEARCHED`, `DAILY`)
-  - [ ] Seed cards loaded at startup (`SEED`, `DAILY`)
-  - [ ] Watchlist upsert — stub for Phase 2
-- [ ] `Poller` — `@Scheduled` job
-  - [ ] Selects cards due to poll based on tier + `last_polled_at` + cadence
-  - [ ] Calls `EbayBrowseClient.searchItems`
-  - [ ] Writes `listing_observation` rows
-- [ ] `InferredSaleDetector`
-  - [ ] Detects `quantity_sold` deltas between consecutive fixed-price observations
-  - [ ] Writes `price_snapshot` with `price_type = INFERRED_SALE`
-- [ ] `DailyAggregator`
-  - [ ] Computes one `market_metric_daily` row per (card, grade, day) from that day's observations
-  - [ ] **Runs before** the retention job on the same day (job ordering matters)
-- [ ] `RetentionJob` — nightly
-  - [ ] Delete `listing_observation` rows older than `retention.listing-observation.days` (default 7)
-  - [ ] Nullify linkback fields on `price_snapshot` older than `retention.price-snapshot-linkback.days` (default 30)
-- [ ] `AgingJob` — nightly
-  - [ ] `SEARCHED` → `DECAYED` after `tracking.decay_after_days`
-  - [ ] `DECAYED` → `PAUSED` after `tracking.pause_after_days`
-- [ ] Events health check — weekly
-  - [ ] Warn when any active competition has < `events.min_future_events` events within `events.check_horizon_months` months
+- [x] `CardTracker` service — reads/writes `card_tracking` per §7.10 lifecycle
+  - [x] ~~Insert on user search (`SEARCHED`, `DAILY`)~~ — **changed by session decision:** search no longer inserts tracking rows; `CardTracker.recordEngagement` is a no-op UPDATE, ready for M6's price-history endpoint to call on click-through. Full demand-driven tracking (inserting on search) waits for Phase 2 accounts.
+  - [x] Seed cards loaded at startup (`SEED`, `DAILY`)
+  - [x] Watchlist upsert — stub for Phase 2 (`CardTracker.upsertWatchlisted`, implemented per §7.10 semantics but not called from anywhere yet)
+- [x] `Poller` — `@Scheduled` job
+  - [x] Selects cards due to poll based on tier + `last_polled_at` + cadence (cadence hours read from `app_setting`, not hardcoded)
+  - [x] Calls `EbayBrowseClient.searchItems`
+  - [x] Writes `listing_observation` rows
+- [x] `InferredSaleDetector`
+  - [x] Detects `quantity_sold` deltas between consecutive fixed-price observations
+  - [x] Writes `price_snapshot` with `price_type = INFERRED_SALE`
+- [x] `DailyAggregator`
+  - [x] Computes one `market_metric_daily` row per (card, grade, day) from that day's observations
+  - [x] **Runs before** the retention job on the same day — `NightlyPipelineJob` is one `@Scheduled` method calling both in sequence, not two separately-scheduled jobs
+- [x] `RetentionJob` — part of the nightly pipeline (not separately scheduled — see above)
+  - [x] Delete `listing_observation` rows older than `retention.listing-observation-days` (default 7)
+  - [x] Nullify linkback fields on `price_snapshot` older than `retention.price-snapshot-linkback-days` (default 30)
+- [x] `AgingJob` — nightly, 03:30 UTC
+  - [x] `SEARCHED` → `DECAYED` after `tracking.decay_after_days`
+  - [x] `DECAYED` → `PAUSED` (poll_cadence, not tier) after `tracking.pause_after_days`
+- [x] Events health check — weekly, Monday 04:00 UTC
+  - [x] Warn (log only, no external notifications in MVP) when any active competition has < `events.min_future_events` events within `events.check_horizon_months` months
 
-**DoD:** with a small tracked set (5–10 cards), the poller runs on schedule, `listing_observation` fills up, next-day aggregation populates `market_metric_daily`, and retention prunes correctly.
+**DoD:** verified end-to-end via Testcontainers (`IngestionPipelineIntegrationTest`) against a real Postgres: poll (mocked eBay client) → `listing_observation` fills up → an inferred quantity-sold delta produces `price_snapshot` rows → next-day aggregation populates `market_metric_daily` → retention prunes both `listing_observation` and `price_snapshot` linkback fields correctly. Also verified live against dev-postgres with the full 159-card seed: `CardTracker` seed-tracks all of them (`SEED`/`DAILY`) cleanly on every boot.
 
 ---
 
