@@ -32,6 +32,22 @@
 		     Override on the CLI to run them, e.g.: mvn test -DexcludedGroups= -->
 		<excludedGroups>live</excludedGroups>
 	</properties>
+	<!-- Spring Boot 4.1.0 manages testcontainers.version=2.0.5, but only the core
+	     org.testcontainers:testcontainers artifact has actually shipped a 2.0.x release -
+	     junit-jupiter and postgresql cap at 1.21.4 (confirmed against Maven Central's
+	     maven-metadata.xml directly). Pinning the whole family to 1.21.4 so nothing mixes
+	     a 2.0.5 core with 1.21.x submodules built against a different major API version. -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>1.21.4</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -115,6 +131,21 @@
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock-standalone</artifactId>
 			<version>3.13.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
