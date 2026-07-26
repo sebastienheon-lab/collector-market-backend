@@ -38,6 +38,12 @@ ebay:
     # (Sports Mem, Cards & Fan Shop). Verified against live eBay category browse pages (M3).
     trading-card-singles: "261328"
 
+# §5.4 / OQ-9: retention windows. Deliberately NOT in app_setting - compliance-adjacent,
+# belongs in code review rather than a runtime settings screen (see §5.4/§9 for the rationale).
+retention:
+  listing-observation-days: 7
+  price-snapshot-linkback-days: 30
+
 management:
   endpoints:
     web:
