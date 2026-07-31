@@ -1,10 +1,13 @@
 package com.collectormarket.backend.catalog;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import com.collectormarket.backend.domain.UnmatchedListing;
+import com.collectormarket.backend.domain.UnmatchedListingRepository;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -12,20 +15,18 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class UnmatchedListingRecorder {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final UnmatchedListingRepository unmatchedListingRepository;
     private final ObjectMapper objectMapper;
 
-    public UnmatchedListingRecorder(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
-        this.jdbcTemplate = jdbcTemplate;
+    public UnmatchedListingRecorder(UnmatchedListingRepository unmatchedListingRepository,
+            ObjectMapper objectMapper) {
+        this.unmatchedListingRepository = unmatchedListingRepository;
         this.objectMapper = objectMapper;
     }
 
     public void record(String rawTitle, ParsedTitle parsed) {
-        String extractedFieldsJson = objectMapper.writeValueAsString(toMap(parsed));
-        jdbcTemplate.update("""
-                INSERT INTO unmatched_listing (raw_title, extracted_fields)
-                VALUES (?, ?::jsonb)
-                """, rawTitle, extractedFieldsJson);
+        String extractedFields = objectMapper.writeValueAsString(toMap(parsed));
+        unmatchedListingRepository.save(new UnmatchedListing(rawTitle, Instant.now(), extractedFields));
     }
 
     private Map<String, Object> toMap(ParsedTitle parsed) {

@@ -9,8 +9,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.domain.UnmatchedListingRepository;
 
 /**
  * M4 DoD: a batch of 50 representative eBay titles yields canonical card IDs for the seeded
@@ -122,7 +124,10 @@ class CardNormalizationServiceIntegrationTest {
     private CardNormalizationService normalizationService;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private CardRepository cardRepository;
+
+    @Autowired
+    private UnmatchedListingRepository unmatchedListingRepository;
 
     @Test
     void fiftyTitleBatch_matchesSeededCards_andLogsTheRestAsUnmatched() {
@@ -144,15 +149,17 @@ class CardNormalizationServiceIntegrationTest {
 
             assertThat(result).as("expected no match for: %s", title).isEmpty();
 
-            Integer unmatchedRows = jdbcTemplate.queryForObject(
-                    "SELECT count(*) FROM unmatched_listing WHERE raw_title = ?", Integer.class, title);
+            // Read via the repository (not raw SQL): a JPQL count auto-flushes the pending JPA
+            // insert first, so it's visible within this @Transactional test's session.
+            long unmatchedRows = unmatchedListingRepository.countByRawTitle(title);
             assertThat(unmatchedRows).as("expected an unmatched_listing row for: %s", title).isEqualTo(1);
         }
     }
 
     private UUID expectedCardId(ExpectedMatch expected) {
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM card WHERE player_name = ? AND year = ? AND brand = ?",
-                UUID.class, expected.player(), expected.year(), expected.brand());
+        List<UUID> ids = cardRepository.findExactMatchIds(
+                expected.player(), (short) expected.year(), expected.brand(), null, null);
+        assertThat(ids).as("seed should hold exactly one card for: %s", expected.title()).hasSize(1);
+        return ids.get(0);
     }
 }

@@ -9,22 +9,26 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
+import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.domain.SportRepository;
+
 /**
- * Idempotent startup loader for the hand-curated card catalog seed (§10 Phase 1, OQ-2).
- * Mirrors {@code ReferenceDataLoader}'s pattern: reads YAML under {@code src/main/resources/seeds/},
- * upserting by natural key rather than a DB-level upsert (no unique constraint on the card
- * table beyond its UUID PK - see M2 for why that's the schema as given).
+ * Idempotent startup loader for the hand-curated card catalog seed (§10 Phase 1, OQ-2). Mirrors
+ * {@code ReferenceDataLoader}'s pattern: reads YAML under {@code src/main/resources/seeds/},
+ * upserting by natural key (find-or-create via {@link CardRepository}) rather than a DB-level upsert
+ * (no unique constraint on the card table beyond its UUID PK - see M2 for why that's the schema).
  * <p>
- * Natural key is (player, year, brand, set) only - NOT cardNumber. cardNumber starts null for
- * most rows and gets filled in as real numbers are confirmed; if it were part of the key, a
- * later correction would insert a duplicate row instead of updating the existing one.
+ * Natural key is (player, year, brand, set) only - NOT cardNumber. cardNumber starts null for most
+ * rows and gets filled in as real numbers are confirmed; if it were part of the key, a later
+ * correction would insert a duplicate row instead of updating the existing one.
  * <p>
- * Ordered before {@code CardTracker} (M5), which seed-tracks any card lacking a
- * {@code card_tracking} row on startup and needs this loader's rows to exist first.
+ * Ordered before {@code CardTracker} (M5), which seed-tracks any card lacking a {@code card_tracking}
+ * row on startup and needs this loader's rows to exist first.
  */
 @Component
 @Order(1)
@@ -32,10 +36,12 @@ public class CardSeedLoader implements ApplicationRunner {
 
     private static final String CARDS_SEED = "seeds/cards.yml";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final CardRepository cardRepository;
+    private final SportRepository sportRepository;
 
-    public CardSeedLoader(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public CardSeedLoader(CardRepository cardRepository, SportRepository sportRepository) {
+        this.cardRepository = cardRepository;
+        this.sportRepository = sportRepository;
     }
 
     @Override
@@ -47,28 +53,27 @@ public class CardSeedLoader implements ApplicationRunner {
 
     private void upsert(Map<String, Object> row) {
         String playerName = (String) row.get("playerName");
-        Integer year = (Integer) row.get("year");
+        Short year = ((Integer) row.get("year")).shortValue();
         String brand = (String) row.get("brand");
         String setName = (String) row.get("setName");
         String cardNumber = (String) row.get("cardNumber");
         String sportCode = (String) row.get("sportCode");
         boolean isRookie = Boolean.TRUE.equals(row.get("isRookie"));
 
-        int updated = jdbcTemplate.update("""
-                UPDATE card
-                SET card_number = ?, sport_id = (SELECT id FROM sport WHERE code = ?), is_rookie = ?
-                WHERE player_name = ? AND year = ?
-                  AND brand IS NOT DISTINCT FROM ? AND set_name IS NOT DISTINCT FROM ?
-                """, cardNumber, sportCode, isRookie, playerName, year, brand, setName);
+        Sport sport = sportRepository.findByCode(sportCode)
+                .orElseThrow(() -> new IllegalStateException("Unknown sport code in seed: " + sportCode));
 
-        if (updated > 0) {
+        List<Card> existing = cardRepository.findByNaturalKey(playerName, year, brand, setName);
+        if (existing.isEmpty()) {
+            cardRepository.save(new Card(playerName, year, brand, setName, cardNumber, sport, isRookie));
             return;
         }
-
-        jdbcTemplate.update("""
-                INSERT INTO card (player_name, year, brand, set_name, card_number, sport_id, is_rookie)
-                VALUES (?, ?, ?, ?, ?, (SELECT id FROM sport WHERE code = ?), ?)
-                """, playerName, year, brand, setName, cardNumber, sportCode, isRookie);
+        for (Card card : existing) {
+            card.setCardNumber(cardNumber);
+            card.setSport(sport);
+            card.setRookie(isRookie);
+        }
+        cardRepository.saveAll(existing);
     }
 
     @SuppressWarnings("unchecked")
