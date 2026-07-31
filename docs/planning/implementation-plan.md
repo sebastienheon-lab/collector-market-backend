@@ -168,22 +168,24 @@ Reference-data loader (OQ-15):
 **Prereqs:** M2 (schema). Can start in parallel with M5 (returns empty results until data lands).
 **Objective:** All Phase 1 endpoints from §8.
 
-- [ ] `GET /api/v1/cards/search?q=&sport=&page=&size=` (§8.1)
-  - [ ] Postgres full-text search or `pg_trgm` GIN index on `player_name` to meet <1s NFR (note: `CREATE EXTENSION pg_trgm` requires an admin role, not the app user — run once per environment)
-  - [ ] Records `card_tracking` engagement on hit (drives OQ-7 demand layer)
-- [ ] `GET /api/v1/cards/{cardId}` (§8.4)
-- [ ] `GET /api/v1/cards/{cardId}/market?grade=` (§8.3)
-- [ ] `GET /api/v1/cards/{cardId}/prices?days=&grade=` (§8.2)
-  - [ ] `sales`, `floorHistory`, `events`, `relatedCards` arrays per spec
-  - [ ] `relatedCards` populated only when primary series is empty (F-11, OQ-5)
-  - [ ] **Never** mix SOLD / INFERRED_SALE / ASK in one array (F-07)
-- [ ] `GET /api/v1/cards/{cardId}/grades?days=` (§8.5)
-- [ ] Springdoc OpenAPI spec at `/v3/api-docs` and `/swagger-ui.html`
-- [ ] Global exception handler → RFC 7807 problem+json responses
-- [ ] Jakarta Validation on inputs (bad `days`, unknown `sport`, etc.)
-- [ ] CORS configured for the separate frontend origin (OQ-4)
+- [x] `GET /api/v1/cards/search?q=&sport=&page=&size=` (§8.1)
+  - [x] `pg_trgm` GIN index on `player_name` to meet <1s NFR (`V013__search_indexes.sql` — **V011/V012 were already taken**, same as M3/M4; `SearchQueryStore` ranks by `similarity()`). **pg_trgm privilege correction:** the old "requires an admin role, not the app user" note is wrong for our setup — pg_trgm is a *trusted* extension (PG13+), so the `collector` app user (has CREATE on the DB, not superuser) creates it fine. Verified live on dev: `collector` (`rolsuper=f`) applied V013 successfully. `CREATE EXTENSION IF NOT EXISTS` stays idempotent if a locked-down env needs an admin to pre-create it.
+  - [x] ~~Records `card_tracking` engagement on search hit~~ — **per the M5 decision, search does NOT record engagement.** The **price-history** endpoint is the click-through signal that calls `CardTracker.recordEngagement` (no-op unless already tracked); full demand-driven tracking waits for Phase 2.
+- [x] `GET /api/v1/cards/{cardId}` (§8.4)
+- [x] `GET /api/v1/cards/{cardId}/market?grade=` (§8.3) — floor/median/active + live listings from the latest `listing_observation` day
+- [x] `GET /api/v1/cards/{cardId}/prices?days=&grade=&cursor=&size=` (§8.2) — sales **cursor-paginated**, floorHistory from `market_metric_daily`
+  - [x] `sales`, `floorHistory`, `events`, `relatedCards` arrays per spec
+  - [x] `relatedCards` populated only when primary series is empty (F-11, OQ-5)
+  - [x] **Never** mix SOLD / INFERRED_SALE / ASK in one array (F-07) — `sales` filtered to `price_type IN (SOLD, INFERRED_SALE)`; ASK/floor lives only in `floorHistory`
+- [x] `GET /api/v1/cards/{cardId}/grades?days=` (§8.5)
+- [x] Springdoc OpenAPI spec at `/v3/api-docs` (always on) and `/swagger-ui.html` (gated off in `prod` profile). Uses springdoc-openapi **3.x** (the Spring Boot 4 line; 2.x is SB3). Grade tokens exposed as a 78-value OpenAPI enum; `days` as `[30,90,180,365]`.
+- [x] Global exception handler → RFC 7807 problem+json (`ApiExceptionHandler`) with `errorCode` + `timestamp` extensions
+- [x] Jakarta Validation on inputs — grade → `INVALID_GRADE`, days → `INVALID_DAYS`, unknown sport → `INVALID_SPORT`, bad cursor → `INVALID_CURSOR`, page/size bounds
+- [x] CORS configured for the separate frontend origin (OQ-4), `app.cors.allowed-origins` (default `http://localhost:5173`); wildcard rejected at startup
 
-**DoD:** all endpoints respond correctly against seeded data; OpenAPI JSON reachable; contract tests for F-07 and F-11 pass.
+**DoD:** ✅ all endpoints respond correctly against the 159-card seed; `/v3/api-docs` reachable; contract tests for F-07 (`PriceTypeContractTest`) and F-11 (`RelatedCardsContractTest`) pass. Full suite green (68 tests). Grade token set: `RAW`, `ALL`, `{PSA,BGS,SGC,CGC}{value}` with half-grades as underscore (`PSA9_5`).
+
+**Event-band window note:** `events` intersect `[today - days, today]` (the price series' historical axis), so bands always render on the chart. The §8.2 example shows a *future* event, which can't sit on a backward-looking axis — that example is illustrative and not date-consistent with "today".
 
 ---
 

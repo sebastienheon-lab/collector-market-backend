@@ -1,0 +1,6 @@
+# Prod profile (selected via SPRING_ENV=prod). M9 fleshes this out; for now it only gates the
+# interactive Swagger UI off in production. /v3/api-docs stays enabled (see application.yaml) so
+# the raw OpenAPI contract remains fetchable for the frontend build.
+springdoc:
+  swagger-ui:
+    enabled: false

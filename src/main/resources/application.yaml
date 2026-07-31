@@ -44,6 +44,20 @@ retention:
   listing-observation-days: 7
   price-snapshot-linkback-days: 30
 
+# OQ-4 / M6: the React frontend is a separate origin. Comma-separated list; never wildcard
+# (see WebConfig, which rejects "*"). Override per environment via APP_CORS_ALLOWED_ORIGINS.
+app:
+  cors:
+    allowed-origins: http://localhost:5173
+
+# M6 API docs. /v3/api-docs is always on so the frontend repo can pull the contract; the Swagger
+# UI is gated off in prod (application-prod.yaml) but left on in dev/staging.
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 management:
   endpoints:
     web:
