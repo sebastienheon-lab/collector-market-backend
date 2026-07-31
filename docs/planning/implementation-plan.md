@@ -211,15 +211,15 @@ Reference-data loader (OQ-15):
 **Prereqs:** runs alongside M4–M6.
 **Objective:** enough coverage that credibility invariants can't silently break.
 
-- [ ] Unit tests: normalizer, inferred-sale detection, aging tier transitions, grade parser
-- [ ] Integration tests: each endpoint against Testcontainers Postgres
-- [ ] **Contract test:** F-07 — SOLD, INFERRED_SALE, ASK never appear together in one series
-- [ ] **Contract test:** F-11 — empty primary series returns non-null `relatedCards` (when siblings exist)
-- [ ] Fixture-based eBay client tests (zero live calls in CI)
-- [ ] GitHub Actions workflow: `mvn verify` on every PR
-- [ ] Branch protection on `main`: require green CI
+- [x] Unit tests: normalizer (`TitleParserTest`, 17), inferred-sale detection (`InferredSaleDetectorTest`, 6), aging tier transitions (`AgingJobTest`, 7), grade parser — **M8 added `GradeNormalizerTest` (12)**, the one real gap; the others already existed from M4/M5.
+- [x] Integration tests: each endpoint against Testcontainers Postgres (`CardsApiIntegrationTest`, 13) — search (+ `INVALID_SPORT`, pagination), detail, market, prices (+ cursor pagination end-to-end, `INVALID_CURSOR`, `INVALID_DAYS`/`INVALID_GRADE`, engagement touch), grades, and `CARD_NOT_FOUND` on every card-scoped endpoint.
+- [x] **Contract test:** F-07 — SOLD, INFERRED_SALE, ASK never appear together in one series (`PriceTypeContractTest`, from M6; inserts an adversarial ASK row to prove the query filter, not just ingestion, excludes it).
+- [x] **Contract test:** F-11 — empty primary series returns non-null `relatedCards` (when siblings exist) (`RelatedCardsContractTest`, from M6; same-set, different-grade, and the non-empty negative case).
+- [x] Fixture-based eBay client tests (`EbayBrowseClientImplTest`, WireMock — search/getItem mapping, retry, budget-block). The live sandbox test is `@Tag("live")` and excluded by the Surefire default (`excludedGroups=live`), so **CI runs zero live calls and needs no eBay credentials**.
+- [x] GitHub Actions workflow (`.github/workflows/ci.yml`): `./mvnw verify` on every PR and on pushes to `main`; JDK 25 (Temurin); Testcontainers Postgres via the runner's Docker (ubuntu-latest); Maven cache; no secrets.
+- [x] Branch protection on `main`: require green CI — **one-time GitHub repo setting (applied by an admin in the UI/API, not from the codebase)**: Settings → Branches → add rule for `main` → *Require status checks to pass before merging* → select the **`mvn verify`** check (appears after CI runs once) + *Require a pull request before merging*.
 
-**DoD:** `mvn verify` green in CI; the two contract tests fail loudly if the underlying invariants break.
+**DoD:** ✅ `./mvnw verify` green (97 tests, 0 failures) with zero live API calls; CI workflow runs it on PRs and pushes to `main`; the two contract tests (`PriceTypeContractTest` F-07, `RelatedCardsContractTest` F-11) fail loudly if the invariants break. Branch protection is a repo admin setting (steps above) — the only item that can't be committed as code.
 
 ---
 

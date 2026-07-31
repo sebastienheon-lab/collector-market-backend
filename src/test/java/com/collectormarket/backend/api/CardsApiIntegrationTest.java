@@ -12,6 +12,8 @@ import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import com.jayway.jsonpath.JsonPath;
+
 /** Endpoint happy paths, RFC 7807 error mappings, and the M5 engagement touch on the prices route. */
 class CardsApiIntegrationTest extends ApiIntegrationTestBase {
 
@@ -108,5 +110,85 @@ class CardsApiIntegrationTest extends ApiIntegrationTestBase {
         Timestamp engagement = jdbcTemplate.queryForObject(
                 "SELECT last_engagement_at FROM card_tracking WHERE card_id = ?", Timestamp.class, id);
         assertThat(engagement.toInstant()).isAfter(daysAgo(1));
+    }
+
+    // --- Search: sport filter + pagination -----------------------------------------------------
+
+    @Test
+    void search_unknownSport_returns400InvalidSport() throws Exception {
+        mockMvc.perform(get("/api/v1/cards/search").param("q", "anyone").param("sport", "quidditch"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("INVALID_SPORT"));
+    }
+
+    @Test
+    void search_paginatesWithTotalCount() throws Exception {
+        String player = "Paginate Player " + UUID.randomUUID();
+        insertCard(player, 2024, "Topps", "Chrome", "1");
+        insertCard(player, 2024, "Topps", "Chrome", "2");
+        insertCard(player, 2024, "Topps", "Chrome", "3");
+
+        mockMvc.perform(get("/api/v1/cards/search").param("q", player).param("size", "2").param("page", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCount").value(3))
+                .andExpect(jsonPath("$.results.length()").value(2))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(2));
+
+        mockMvc.perform(get("/api/v1/cards/search").param("q", player).param("size", "2").param("page", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.results.length()").value(1))
+                .andExpect(jsonPath("$.page").value(1));
+    }
+
+    // --- Prices: cursor pagination + bad cursor ------------------------------------------------
+
+    @Test
+    void prices_cursorPaginatesSalesAcrossPages() throws Exception {
+        UUID id = insertCard("Cursor Player " + UUID.randomUUID(), 2024, "Topps", "Chrome", "1");
+        insertSale(id, "SOLD", "PSA", "10", "300.00", daysAgo(2));
+        insertSale(id, "SOLD", "PSA", "10", "310.00", daysAgo(4));
+        insertSale(id, "SOLD", "PSA", "10", "320.00", daysAgo(6));
+
+        String firstPage = mockMvc.perform(get("/api/v1/cards/{id}/prices", id)
+                        .param("grade", "PSA10").param("days", "90").param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sales.items.length()").value(2))
+                .andExpect(jsonPath("$.sales.nextCursor").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
+
+        String cursor = JsonPath.read(firstPage, "$.sales.nextCursor");
+
+        mockMvc.perform(get("/api/v1/cards/{id}/prices", id)
+                        .param("grade", "PSA10").param("days", "90").param("size", "2").param("cursor", cursor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sales.items.length()").value(1))   // the remaining sale
+                .andExpect(jsonPath("$.sales.nextCursor").isEmpty());     // no further page
+    }
+
+    @Test
+    void prices_invalidCursor_returns400InvalidCursor() throws Exception {
+        UUID id = insertCard("BadCursor Player " + UUID.randomUUID(), 2024, "Topps", "Chrome", "1");
+
+        mockMvc.perform(get("/api/v1/cards/{id}/prices", id).param("cursor", "not-a-real-cursor"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("INVALID_CURSOR"));
+    }
+
+    // --- Unknown card 404s across every card-scoped endpoint -----------------------------------
+
+    @Test
+    void unknownCard_returns404OnMarketGradesAndPrices() throws Exception {
+        UUID missing = UUID.randomUUID();
+
+        mockMvc.perform(get("/api/v1/cards/{id}/market", missing))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("CARD_NOT_FOUND"));
+        mockMvc.perform(get("/api/v1/cards/{id}/grades", missing).param("days", "90"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("CARD_NOT_FOUND"));
+        mockMvc.perform(get("/api/v1/cards/{id}/prices", missing).param("days", "90"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("CARD_NOT_FOUND"));
     }
 }
