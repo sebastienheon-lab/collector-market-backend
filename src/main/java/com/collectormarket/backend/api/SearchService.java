@@ -2,9 +2,11 @@ package com.collectormarket.backend.api;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.collectormarket.backend.api.SearchQueryParser.ParsedQuery;
+import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.api.dto.SearchResponse;
 import com.collectormarket.backend.api.dto.SearchResultItem;
 import com.collectormarket.backend.api.error.InvalidSportException;
@@ -21,6 +23,10 @@ public class SearchService {
         this.cardQueryStore = cardQueryStore;
     }
 
+    // Popular queries repeat; a bad sport throws before the body runs, so failures aren't cached.
+    // The default profile (page 0) is the hot path the frontend hits first.
+    @Cacheable(cacheNames = CacheConfig.SEARCH,
+            key = "#query + '|' + #sportCode + '|' + #page + '|' + #size")
     public SearchResponse search(String query, String sportCode, int page, int size) {
         Short sportId = resolveSport(sportCode);
         ParsedQuery parsed = SearchQueryParser.parse(query);

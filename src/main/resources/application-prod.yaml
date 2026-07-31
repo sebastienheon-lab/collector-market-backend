@@ -1,6 +1,26 @@
-# Prod profile (selected via SPRING_ENV=prod). M9 fleshes this out; for now it only gates the
-# interactive Swagger UI off in production. /v3/api-docs stays enabled (see application.yaml) so
-# the raw OpenAPI contract remains fetchable for the frontend build.
+# Prod profile (SPRING_ENV=prod). Overrides only. No secrets here - datasource URL/credentials and
+# eBay client-id/secret come from environment variables (SPRING_DATASOURCE_URL / _USERNAME /
+# _PASSWORD, EBAY_CLIENT_ID / EBAY_CLIENT_SECRET) via relaxed binding. M9 fleshes this out further.
+
+# Points at the eBay *production* API.
+ebay:
+  oauth-token-url: https://api.ebay.com/identity/v1/oauth2/token
+  api-base-url: https://api.ebay.com
+
+# Structured JSON logs (Elastic Common Schema) for log aggregation.
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    com.collectormarket: INFO
+    org.hibernate.SQL: WARN
+
 springdoc:
+  # Raw /v3/api-docs stays enabled (application.yaml) so the frontend build can pull the contract;
+  # the interactive Swagger UI is gated off in production.
   swagger-ui:
     enabled: false
+
+# Health detail is not exposed to anonymous callers in prod (inherits show-details: when-authorized
+# from application.yaml). A DEGRADED eBay component still returns HTTP 200 overall.

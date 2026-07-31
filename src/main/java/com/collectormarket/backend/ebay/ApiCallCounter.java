@@ -48,4 +48,12 @@ public class ApiCallCounter {
                 Integer.class, today, apiName);
         return count != null ? count : 0;
     }
+
+    /** Total calls made today across every api_name - backs the {@code ebay.quota.remaining} gauge. */
+    public int totalCountToday() {
+        Integer sum = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(call_count), 0) FROM api_call_counter WHERE call_date = ?",
+                Integer.class, LocalDate.now());
+        return sum != null ? sum : 0;
+    }
 }

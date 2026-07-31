@@ -1,0 +1,21 @@
+# Staging profile (SPRING_ENV=staging). Overrides only - everything else inherits application.yaml.
+# No secrets here: datasource URL/credentials and eBay client-id/secret arrive via environment
+# variables (SPRING_DATASOURCE_URL / _USERNAME / _PASSWORD, EBAY_CLIENT_ID / EBAY_CLIENT_SECRET),
+# which Spring binds through relaxed binding. Points at the eBay *production* API.
+ebay:
+  oauth-token-url: https://api.ebay.com/identity/v1/oauth2/token
+  api-base-url: https://api.ebay.com
+
+# Structured JSON logs (Elastic Common Schema) for log aggregation.
+logging:
+  structured:
+    format:
+      console: ecs
+  level:
+    com.collectormarket: INFO
+    org.hibernate.SQL: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: always

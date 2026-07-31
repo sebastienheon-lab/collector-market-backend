@@ -194,15 +194,15 @@ Reference-data loader (OQ-15):
 **Prereqs:** M5, M6.
 **Objective:** production-shape polish.
 
-- [ ] Structured logging (JSON in prod, human-readable in dev)
-- [ ] Micrometer metrics: eBay call count/quota headroom, job durations, error rates per endpoint
-- [ ] Caffeine cache on popular search queries + card detail lookups (§9)
-- [ ] Config profiles: `local`, `staging`, `prod`
-- [ ] Secrets via env vars only (never in `application.yml`)
-- [ ] Health indicators for DB and eBay client
-- [ ] Graceful shutdown so in-flight jobs complete
+- [x] Structured logging — Spring Boot 4's **built-in** structured logging (no extra dependency): `logging.structured.format.console: ecs` (Elastic Common Schema JSON) in `staging`/`prod`, human-readable console in `local`.
+- [x] Micrometer metrics (backed by Actuator's bundled micrometer-core `SimpleMeterRegistry`; no external registry per the M7 decision). `ebay.calls.total` (counter, tagged `endpoint`+`outcome` = success/error/blocked, incremented in `EbayBrowseClientImpl`); `ebay.quota.remaining` (gauge); `job.duration` (timer) + `job.failures` (counter), both tagged `job`, via `JobMetrics` wrapping every `@Scheduled` body; `cards.tracked` (gauge, tagged `tier`). HTTP endpoints covered by Actuator's `http.server.requests`. **Per-endpoint error rates come from `http.server.requests{status,uri}`, not a bespoke metric.**
+- [x] Caffeine cache (§9) — `search` (5 min / 1000), `cardDetail` (1 h / 500), `appSetting` (60 s per §7.12) via `CacheConfig` (`SimpleCacheManager` over per-cache `CaffeineCache`, `recordStats()` on so `cache.gets` is exposed). **`/market` and price history are deliberately NOT cached** (live floor prices must never be stale). `AppSettingService` reads now flow through the cached `AppSettingStore` (split out to dodge the `@Cacheable` self-invocation trap).
+- [x] Config profiles: `local` (default), `staging`, `prod` — overrides-only files over the shared `application.yaml`; the gitignored `credentials` profile is unchanged. (`dev` retired: its content moved into the previously-empty `local`.)
+- [x] Secrets via env vars only — no secrets in any profile file; `staging`/`prod` take datasource URL/credentials and eBay client-id/secret from env vars (`SPRING_DATASOURCE_*`, `EBAY_CLIENT_ID`/`EBAY_CLIENT_SECRET`) via relaxed binding.
+- [x] Health indicators — DB via Actuator's default `db` indicator; **`EbayHealthIndicator` reports from cached state only (last successful call, quota consumption, cached-token validity) and never makes a live call** (health is polled frequently and would burn the 5k/day quota). `DEGRADED` (custom status, HTTP 200) after `ebay.health.stale-after-hours` with no success; `DOWN` (503) only if a token refresh has failed.
+- [x] Graceful shutdown — `server.shutdown: graceful` + `spring.lifecycle.timeout-per-shutdown-phase: 30s`, and the scheduler awaits termination (`spring.task.scheduling.shutdown`). The poller flips a flag on `ContextClosedEvent` and checks it **between cards**, so shutdown lands on a card boundary, never mid-card.
 
-**DoD:** metrics show eBay call count rising as expected; logs queryable; caching demonstrably reduces DB load on repeated searches.
+**DoD:** ✅ verified end-to-end via `ObservabilityIntegrationTest` (full Spring context against Testcontainers Postgres): metrics reachable at `/actuator/metrics` (`ebay.quota.remaining`, `cache.gets`, `cards.tracked` tagged by tier); cache hit/miss observable (Caffeine stats + `cache.gets` metric); `/actuator/health` returns the `ebay` component with **no eBay network call** (unit-proven by `EbayHealthIndicatorTest` — the indicator has no client dependency). Graceful-shutdown boundary proven by `PollerGracefulShutdownTest`. Full suite green (80 tests).
 
 ---
 

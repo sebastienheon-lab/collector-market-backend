@@ -1,7 +1,0 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/collector_market_dev
-
-ebay:
-  oauth-token-url: https://api.sandbox.ebay.com/identity/v1/oauth2/token
-  api-base-url: https://api.sandbox.ebay.com

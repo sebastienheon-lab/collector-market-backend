@@ -1,10 +1,25 @@
+server:
+  # M7 graceful shutdown: stop accepting new requests and let in-flight ones finish (up to the
+  # spring.lifecycle timeout below) instead of killing the JVM immediately.
+  shutdown: graceful
+
 spring:
   profiles:
     include:
-      - ${SPRING_ENV:dev}
+      - ${SPRING_ENV:local}
       - credentials
   application:
     name: collector-market-backend
+
+  # M7 graceful shutdown: let the scheduler finish the in-flight scheduled job (the poller checks
+  # for shutdown on each card boundary, see Poller) before the JVM exits.
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  task:
+    scheduling:
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -23,10 +38,16 @@ spring:
     locations: classpath:db/migration
 
 # §5.1.1 / OQ-1: eBay Browse API. client-id/client-secret come from the gitignored
-# credentials profile; oauth-token-url/api-base-url are environment-specific (see
-# application-dev.yml for the sandbox endpoints).
+# credentials profile (local) or env vars EBAY_CLIENT_ID/EBAY_CLIENT_SECRET (staging/prod);
+# oauth-token-url/api-base-url are environment-specific (see application-local.yml for the
+# sandbox endpoints, application-staging/prod for production endpoints).
 ebay:
   daily-call-limit: 5000 # free-tier default, confirmed via eBay developer docs (M3)
+  # M7: eBay health indicator marks the integration DEGRADED after this many hours with no
+  # successful call (measured from app start until the first success). Cached-state only - the
+  # indicator never makes a live call, so frequent health polling can't burn the daily quota.
+  health:
+    stale-after-hours: 6
   connect-timeout-ms: 5000
   response-timeout-ms: 10000
   retry:
@@ -62,11 +83,21 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics
+        include: health, info, metrics, caches
   endpoint:
     health:
+      # Safe default; local/staging override to "always" for component-level visibility.
       show-details: when-authorized
+      # M7: the eBay indicator reports DEGRADED (stale, but the app still serves DB reads) as a
+      # distinct, less-severe-than-DOWN status that maps to HTTP 200, so a quiet eBay integration
+      # never 503s the whole app. DOWN (token refresh failed) still fails hard.
+      status:
+        order: DOWN,OUT_OF_SERVICE,DEGRADED,UNKNOWN,UP
+        http-mapping:
+          degraded: 200
 
+# Human-readable console logging by default (local). staging/prod switch to structured JSON
+# (logging.structured.format.console: ecs) in their profile files.
 logging:
   level:
     root: INFO

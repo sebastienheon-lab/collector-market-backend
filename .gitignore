@@ -21,7 +21,8 @@ Thumbs.db
 # Env / secrets
 .env
 .env.*
-application-local.yml
+# application-local.yml is now the committed default (local) profile - non-secret sandbox config
+# only. Secrets stay in the still-ignored credentials profile (or env vars).
 application-credentials.yml
 
 # Logs

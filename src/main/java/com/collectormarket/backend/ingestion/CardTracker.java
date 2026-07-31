@@ -76,6 +76,13 @@ public class CardTracker implements ApplicationRunner {
         jdbcTemplate.update("UPDATE card_tracking SET last_polled_at = now() WHERE card_id = ?", cardId);
     }
 
+    /** Count of cards currently in the given tier - backs the {@code cards.tracked} gauge (M7). */
+    public int countByTier(CardTier tier) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM card_tracking WHERE tier = ?", Integer.class, tier.name());
+        return count != null ? count : 0;
+    }
+
     /** No-op if the card isn't tracked - search/browsing alone never creates a tracking row. */
     public void recordEngagement(UUID cardId) {
         jdbcTemplate.update("UPDATE card_tracking SET last_engagement_at = now() WHERE card_id = ?", cardId);

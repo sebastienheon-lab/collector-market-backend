@@ -1,0 +1,15 @@
+# Local developer profile (default when SPRING_ENV is unset). Points at a local Postgres and the
+# eBay *sandbox*; console logging stays human-readable (no structured.format override). eBay
+# credentials come from the gitignored application-credentials.yml.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/collector_market_dev
+
+ebay:
+  oauth-token-url: https://api.sandbox.ebay.com/identity/v1/oauth2/token
+  api-base-url: https://api.sandbox.ebay.com
+
+management:
+  endpoint:
+    health:
+      show-details: always

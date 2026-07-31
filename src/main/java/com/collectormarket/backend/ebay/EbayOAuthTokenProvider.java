@@ -33,6 +33,9 @@ public class EbayOAuthTokenProvider {
     private final WebClient tokenWebClient;
     private final EbayProperties properties;
     private final AtomicReference<CachedToken> cache = new AtomicReference<>();
+    // Read by EbayHealthIndicator from cached state - never triggers a token fetch. True only once a
+    // refresh attempt has actually failed; reset on the next successful refresh.
+    private volatile boolean lastRefreshFailed = false;
 
     public EbayOAuthTokenProvider(WebClient.Builder webClientBuilder, EbayProperties properties) {
         this.properties = properties;
@@ -63,8 +66,21 @@ public class EbayOAuthTokenProvider {
                     CachedToken token = new CachedToken(
                             response.accessToken(), Instant.now().plusSeconds(response.expiresIn()));
                     cache.set(token);
+                    lastRefreshFailed = false;
                     log.info("ebay_oauth_token_refreshed expiresInSeconds={}", response.expiresIn());
                     return token.accessToken();
-                });
+                })
+                .doOnError(error -> lastRefreshFailed = true);
+    }
+
+    /** True once a token refresh has failed (and no later one has succeeded). No network call. */
+    public boolean lastRefreshFailed() {
+        return lastRefreshFailed;
+    }
+
+    /** Whether a non-expired token is currently cached. Cached-state read only; no network call. */
+    public boolean hasValidCachedToken() {
+        CachedToken cached = cache.get();
+        return cached != null && cached.isUsable(Instant.now(), Duration.ZERO);
     }
 }

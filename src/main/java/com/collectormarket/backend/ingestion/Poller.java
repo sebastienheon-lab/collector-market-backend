@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,7 @@ import com.collectormarket.backend.ebay.dto.ItemDetail;
 import com.collectormarket.backend.ebay.dto.ItemSearchResult;
 import com.collectormarket.backend.ebay.dto.ItemSummary;
 import com.collectormarket.backend.ebay.dto.ListingFormat;
+import com.collectormarket.backend.observability.JobMetrics;
 
 /**
  * §5.1.1 active-listing poller. Assumes single-instance deployment; introduce ShedLock or
@@ -49,6 +52,11 @@ public class Poller {
     private final InferredSaleDetector inferredSaleDetector;
     private final ListingObservationStore listingObservationStore;
     private final JdbcTemplate jdbcTemplate;
+    private final JobMetrics jobMetrics;
+
+    // Flipped by the ContextClosedEvent on shutdown so an in-flight tick stops at the next card
+    // boundary (never mid-card). volatile: set on the shutdown thread, read on the scheduler thread.
+    private volatile boolean shuttingDown = false;
 
     public Poller(
             CardTracker cardTracker,
@@ -57,7 +65,8 @@ public class Poller {
             EbayProperties ebayProperties,
             InferredSaleDetector inferredSaleDetector,
             ListingObservationStore listingObservationStore,
-            JdbcTemplate jdbcTemplate) {
+            JdbcTemplate jdbcTemplate,
+            JobMetrics jobMetrics) {
         this.cardTracker = cardTracker;
         this.appSettingService = appSettingService;
         this.ebayBrowseClient = ebayBrowseClient;
@@ -65,18 +74,36 @@ public class Poller {
         this.inferredSaleDetector = inferredSaleDetector;
         this.listingObservationStore = listingObservationStore;
         this.jdbcTemplate = jdbcTemplate;
+        this.jobMetrics = jobMetrics;
+    }
+
+    @EventListener
+    void onContextClosed(ContextClosedEvent event) {
+        shuttingDown = true;
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void pollDueCards() {
+        jobMetrics.run("poller", this::pollTick);
+    }
+
+    private void pollTick() {
         int dailyCadenceHours = appSettingService.getInt(DAILY_CADENCE_SETTING, DEFAULT_DAILY_CADENCE_HOURS);
         List<TrackedCard> due = cardTracker.selectDueForPoll(dailyCadenceHours);
         log.info("poller_tick dueCards={}", due.size());
 
+        int polled = 0;
         for (TrackedCard tracked : due) {
+            // Land shutdown on a card boundary - never interrupt a card mid-poll.
+            if (shuttingDown || Thread.currentThread().isInterrupted()) {
+                log.info("poller_stopping reason=shutdown_requested polled={} remaining={}",
+                        polled, due.size() - polled);
+                break;
+            }
             try {
                 pollCard(tracked.cardId());
                 cardTracker.recordPolled(tracked.cardId());
+                polled++;
             } catch (EbayCallBudgetExceededException e) {
                 log.warn("poller_stopping reason=daily_budget_exceeded");
                 break;

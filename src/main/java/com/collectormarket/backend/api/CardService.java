@@ -2,8 +2,10 @@ package com.collectormarket.backend.api;
 
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.api.dto.CardDetail;
 import com.collectormarket.backend.api.error.CardNotFoundException;
 import com.collectormarket.backend.domain.Card;
@@ -26,6 +28,9 @@ public class CardService {
         this.cardRepository = cardRepository;
     }
 
+    // Catalog rows are effectively immutable; a missing card throws, so 404s aren't cached.
+    // requireExists (below) stays uncached - it guards the live market/prices endpoints.
+    @Cacheable(cacheNames = CacheConfig.CARD_DETAIL, key = "#cardId")
     public CardDetail getCard(UUID cardId) {
         Card card = cardRepository.findWithSportById(cardId)
                 .orElseThrow(() -> new CardNotFoundException(cardId));

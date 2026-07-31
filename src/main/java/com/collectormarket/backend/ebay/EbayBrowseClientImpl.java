@@ -16,7 +16,9 @@ import com.collectormarket.backend.ebay.dto.ItemSearchResult;
 import com.collectormarket.backend.ebay.dto.SearchFilters;
 import com.collectormarket.backend.ebay.internal.EbayItemDetailRaw;
 import com.collectormarket.backend.ebay.internal.EbaySearchResponse;
+import com.collectormarket.backend.observability.EbayCallState;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
@@ -33,13 +35,18 @@ public class EbayBrowseClientImpl implements EbayBrowseClient {
     private final EbayOAuthTokenProvider tokenProvider;
     private final ApiCallCounter callCounter;
     private final EbayProperties properties;
+    private final MeterRegistry meterRegistry;
+    private final EbayCallState callState;
 
     public EbayBrowseClientImpl(WebClient ebayWebClient, EbayOAuthTokenProvider tokenProvider,
-            ApiCallCounter callCounter, EbayProperties properties) {
+            ApiCallCounter callCounter, EbayProperties properties,
+            MeterRegistry meterRegistry, EbayCallState callState) {
         this.webClient = ebayWebClient;
         this.tokenProvider = tokenProvider;
         this.callCounter = callCounter;
         this.properties = properties;
+        this.meterRegistry = meterRegistry;
+        this.callState = callState;
     }
 
     @Override
@@ -85,23 +92,34 @@ public class EbayBrowseClientImpl implements EbayBrowseClient {
                 .flatMap(reserved -> {
                     if (!reserved) {
                         log.warn("ebay_api_call_blocked api={} reason=daily_budget_exceeded", apiName);
+                        countCall(apiName, "blocked");
                         return Mono.error(new EbayCallBudgetExceededException(
                                 "Daily call budget exceeded for " + apiName));
                     }
                     long startedAt = System.nanoTime();
                     return tokenProvider.getAccessToken()
                             .flatMap(request)
-                            .doOnSuccess(result -> log.info(
-                                    "ebay_api_call api={} cost=1 outcome=success durationMs={}",
-                                    apiName, elapsedMs(startedAt)))
+                            .doOnSuccess(result -> {
+                                callState.recordSuccess();
+                                countCall(apiName, "success");
+                                log.info("ebay_api_call api={} cost=1 outcome=success durationMs={}",
+                                        apiName, elapsedMs(startedAt));
+                            })
                             .doOnError(error -> log.warn(
                                     "ebay_api_call api={} cost=1 outcome=error durationMs={} error={}",
                                     apiName, elapsedMs(startedAt), error.toString()))
                             .retryWhen(Retry.backoff(properties.retry().maxAttempts(),
                                             Duration.ofMillis(properties.retry().minBackoffMs()))
                                     .maxBackoff(Duration.ofMillis(properties.retry().maxBackoffMs()))
-                                    .filter(EbayTransientApiException.class::isInstance));
+                                    .filter(EbayTransientApiException.class::isInstance))
+                            // After retries are exhausted, count the call's final outcome exactly
+                            // once (the doOnError above logs per attempt; this counter is terminal).
+                            .doOnError(error -> countCall(apiName, "error"));
                 });
+    }
+
+    private void countCall(String apiName, String outcome) {
+        meterRegistry.counter("ebay.calls.total", "endpoint", apiName, "outcome", outcome).increment();
     }
 
     private void applyAuth(HttpHeaders headers, String token) {

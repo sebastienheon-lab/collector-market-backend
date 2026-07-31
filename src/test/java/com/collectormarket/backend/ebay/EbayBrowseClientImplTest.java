@@ -27,8 +27,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.collectormarket.backend.ebay.dto.ItemDetail;
 import com.collectormarket.backend.ebay.dto.ItemSearchResult;
 import com.collectormarket.backend.ebay.dto.ListingFormat;
+import com.collectormarket.backend.observability.EbayCallState;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import reactor.test.StepVerifier;
 
 /**
@@ -64,7 +66,8 @@ class EbayBrowseClientImplTest {
 
         WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
         EbayOAuthTokenProvider tokenProvider = new EbayOAuthTokenProvider(WebClient.builder(), properties);
-        client = new EbayBrowseClientImpl(webClient, tokenProvider, callCounter, properties);
+        client = new EbayBrowseClientImpl(webClient, tokenProvider, callCounter, properties,
+                new SimpleMeterRegistry(), new EbayCallState());
     }
 
     @Test
