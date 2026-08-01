@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.collectormarket.backend.api.dto.EventBand;
 import com.collectormarket.backend.domain.CompetitionEvent;
-import com.collectormarket.backend.domain.CompetitionEventRepository;
+import com.collectormarket.backend.repositories.CompetitionEventRepository;
 
 /**
  * Verifies event bands are read and projected onto the {@link EventBand} record from a native

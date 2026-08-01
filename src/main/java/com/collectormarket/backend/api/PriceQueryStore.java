@@ -1,5 +1,7 @@
 package com.collectormarket.backend.api;
 
+import com.collectormarket.backend.repositories.PriceRepository;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -10,9 +12,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.api.PriceRepository.LastSale;
-import com.collectormarket.backend.api.PriceRepository.PriceSummaryAgg;
-import com.collectormarket.backend.api.PriceRepository.SaleRow;
+import com.collectormarket.backend.repositories.PriceRepository.LastSale;
+import com.collectormarket.backend.repositories.PriceRepository.PriceSummaryAgg;
+import com.collectormarket.backend.repositories.PriceRepository.SaleRow;
 import com.collectormarket.backend.api.dto.FloorPoint;
 import com.collectormarket.backend.api.dto.GradeAverage;
 import com.collectormarket.backend.api.dto.PriceSummary;

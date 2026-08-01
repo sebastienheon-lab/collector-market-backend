@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.ListingObservationRepository;
-import com.collectormarket.backend.domain.PriceSnapshotRepository;
+import com.collectormarket.backend.repositories.ListingObservationRepository;
+import com.collectormarket.backend.repositories.PriceSnapshotRepository;
 
 /**
  * §5.4 / OQ-9 retention enforcement: deletes expired {@code listing_observation} rows and

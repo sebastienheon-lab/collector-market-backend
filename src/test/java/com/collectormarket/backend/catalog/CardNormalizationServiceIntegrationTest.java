@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.collectormarket.backend.domain.CardRepository;
-import com.collectormarket.backend.domain.UnmatchedListingRepository;
+import com.collectormarket.backend.repositories.CardRepository;
+import com.collectormarket.backend.repositories.UnmatchedListingRepository;
 import com.collectormarket.backend.services.CardNormalizationService;
 
 /**

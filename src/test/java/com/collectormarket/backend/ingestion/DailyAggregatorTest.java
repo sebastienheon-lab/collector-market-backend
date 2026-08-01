@@ -24,7 +24,7 @@ class DailyAggregatorTest extends IngestionJpaTestBase {
     private DailyAggregator aggregator;
 
     @Autowired
-    private com.collectormarket.backend.domain.MarketMetricDailyRepository marketMetricDailyRepository;
+    private com.collectormarket.backend.repositories.MarketMetricDailyRepository marketMetricDailyRepository;
 
     @Test
     void computesFloorMedianActiveNewAndDelistings() {

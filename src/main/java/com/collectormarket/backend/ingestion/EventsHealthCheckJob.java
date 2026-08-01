@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.SportCompetitionRepository;
+import com.collectormarket.backend.repositories.SportCompetitionRepository;
 import com.collectormarket.backend.observability.JobMetrics;
 import com.collectormarket.backend.services.AppSettingService;
 

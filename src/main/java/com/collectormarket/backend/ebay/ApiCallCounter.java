@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.collectormarket.backend.domain.ApiCallCountId;
-import com.collectormarket.backend.domain.ApiCallCountRepository;
+import com.collectormarket.backend.repositories.ApiCallCountRepository;
 
 /**
  * Persisted daily call budget guard (M3), backed by {@code api_call_counter} (V010) via

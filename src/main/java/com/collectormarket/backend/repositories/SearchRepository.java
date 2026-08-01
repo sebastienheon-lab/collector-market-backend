@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api;
+package com.collectormarket.backend.repositories;
 
 import java.util.List;
 

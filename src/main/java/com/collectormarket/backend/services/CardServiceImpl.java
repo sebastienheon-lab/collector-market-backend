@@ -9,7 +9,7 @@ import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.api.dto.CardDetail;
 import com.collectormarket.backend.api.error.CardNotFoundException;
 import com.collectormarket.backend.domain.Card;
-import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.repositories.CardRepository;
 
 /**
  * Default {@link CardService}: card-detail lookups (§8.4) and the shared existence guard.

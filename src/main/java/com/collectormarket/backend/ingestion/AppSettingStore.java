@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.domain.AppSetting;
-import com.collectormarket.backend.domain.AppSettingRepository;
+import com.collectormarket.backend.repositories.AppSettingRepository;
 
 /**
  * Raw {@code app_setting} reads, cached in the {@code appSetting} Caffeine cache (60 s TTL, §7.12).

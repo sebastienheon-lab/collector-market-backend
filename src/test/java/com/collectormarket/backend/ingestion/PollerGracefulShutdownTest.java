@@ -18,7 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.repositories.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.services.AppSettingService;
 import com.collectormarket.backend.ebay.EbayProperties;

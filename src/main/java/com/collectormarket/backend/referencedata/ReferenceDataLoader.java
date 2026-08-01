@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
 import com.collectormarket.backend.domain.CompetitionEvent;
-import com.collectormarket.backend.domain.CompetitionEventRepository;
+import com.collectormarket.backend.repositories.CompetitionEventRepository;
 import com.collectormarket.backend.domain.Sport;
 import com.collectormarket.backend.domain.SportCompetition;
-import com.collectormarket.backend.domain.SportCompetitionRepository;
-import com.collectormarket.backend.domain.SportRepository;
+import com.collectormarket.backend.repositories.SportCompetitionRepository;
+import com.collectormarket.backend.repositories.SportRepository;
 
 /**
  * Idempotent startup loader for {@code sport_competition} and {@code competition_event} (§7.8-7.9, OQ-15).

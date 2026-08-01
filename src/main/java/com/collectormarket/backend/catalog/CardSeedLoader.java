@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
 import com.collectormarket.backend.domain.Card;
-import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.repositories.CardRepository;
 import com.collectormarket.backend.domain.Sport;
-import com.collectormarket.backend.domain.SportRepository;
+import com.collectormarket.backend.repositories.SportRepository;
 
 /**
  * Idempotent startup loader for the hand-curated card catalog seed (§10 Phase 1, OQ-2). Mirrors

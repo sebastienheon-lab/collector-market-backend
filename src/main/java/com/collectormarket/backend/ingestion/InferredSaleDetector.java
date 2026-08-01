@@ -3,9 +3,9 @@ package com.collectormarket.backend.ingestion;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.domain.ListingObservation;
-import com.collectormarket.backend.domain.ListingObservationRepository;
+import com.collectormarket.backend.repositories.ListingObservationRepository;
 import com.collectormarket.backend.domain.PriceSnapshot;
-import com.collectormarket.backend.domain.PriceSnapshotRepository;
+import com.collectormarket.backend.repositories.PriceSnapshotRepository;
 
 /**
  * §5.1.1 inferred-sale rule: a quantity_sold increase of N between consecutive fixed-price

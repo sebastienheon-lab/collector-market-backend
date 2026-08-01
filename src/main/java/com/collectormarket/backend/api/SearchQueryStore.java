@@ -1,5 +1,7 @@
 package com.collectormarket.backend.api;
 
+import com.collectormarket.backend.repositories.SearchRepository;
+
 import java.util.List;
 
 import org.springframework.stereotype.Component;

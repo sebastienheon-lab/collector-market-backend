@@ -11,7 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.domain.CardTracking;
-import com.collectormarket.backend.domain.CardTrackingRepository;
+import com.collectormarket.backend.repositories.CardTrackingRepository;
 
 /**
  * Reads/writes {@code card_tracking} per its §7.10 lifecycle, via {@link CardTrackingRepository}.

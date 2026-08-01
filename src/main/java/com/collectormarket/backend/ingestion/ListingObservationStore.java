@@ -2,7 +2,7 @@ package com.collectormarket.backend.ingestion;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.ListingObservationRepository;
+import com.collectormarket.backend.repositories.ListingObservationRepository;
 
 @Component
 public class ListingObservationStore {

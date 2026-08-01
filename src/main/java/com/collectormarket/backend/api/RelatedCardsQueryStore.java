@@ -1,12 +1,14 @@
 package com.collectormarket.backend.api;
 
+import com.collectormarket.backend.repositories.RelatedCardsRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.api.RelatedCardsRepository.GradeSaleRow;
+import com.collectormarket.backend.repositories.RelatedCardsRepository.GradeSaleRow;
 import com.collectormarket.backend.api.dto.RelatedCard;
 
 /**

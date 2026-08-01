@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.MarketMetricDailyRepository;
+import com.collectormarket.backend.repositories.MarketMetricDailyRepository;
 
 /**
  * §7.11: one {@code market_metric_daily} row per (card, grade, day), computed from that day's

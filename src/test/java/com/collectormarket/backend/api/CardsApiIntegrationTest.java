@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.collectormarket.backend.domain.CardTracking;
-import com.collectormarket.backend.domain.CardTrackingRepository;
+import com.collectormarket.backend.repositories.CardTrackingRepository;
 import com.jayway.jsonpath.JsonPath;
 
 /** Endpoint happy paths, RFC 7807 error mappings, and the M5 engagement touch on the prices route. */

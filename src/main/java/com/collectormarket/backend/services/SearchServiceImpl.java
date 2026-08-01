@@ -13,7 +13,7 @@ import com.collectormarket.backend.api.dto.SearchResponse;
 import com.collectormarket.backend.api.dto.SearchResultItem;
 import com.collectormarket.backend.api.error.InvalidSportException;
 import com.collectormarket.backend.domain.Sport;
-import com.collectormarket.backend.domain.SportRepository;
+import com.collectormarket.backend.repositories.SportRepository;
 
 /** Default {@link SearchService}: trigram ranking on player name, optional sport filter, offset pagination. */
 @Service

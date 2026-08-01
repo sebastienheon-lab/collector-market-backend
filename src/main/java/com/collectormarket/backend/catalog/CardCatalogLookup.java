@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.repositories.CardRepository;
 
 /**
  * Queries the {@code card} table directly (via {@link CardRepository}) rather than caching an

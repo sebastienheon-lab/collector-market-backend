@@ -1,5 +1,7 @@
 package com.collectormarket.backend.api;
 
+import com.collectormarket.backend.repositories.MarketRepository;
+
 import java.util.List;
 import java.util.UUID;
 
