@@ -10,17 +10,19 @@ import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.api.dto.SearchResponse;
 import com.collectormarket.backend.api.dto.SearchResultItem;
 import com.collectormarket.backend.api.error.InvalidSportException;
+import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.domain.SportRepository;
 
 /** Card search (§8.1): trigram ranking on player name, optional sport filter, offset pagination. */
 @Service
 public class SearchService {
 
     private final SearchQueryStore searchQueryStore;
-    private final CardQueryStore cardQueryStore;
+    private final SportRepository sportRepository;
 
-    public SearchService(SearchQueryStore searchQueryStore, CardQueryStore cardQueryStore) {
+    public SearchService(SearchQueryStore searchQueryStore, SportRepository sportRepository) {
         this.searchQueryStore = searchQueryStore;
-        this.cardQueryStore = cardQueryStore;
+        this.sportRepository = sportRepository;
     }
 
     // Popular queries repeat; a bad sport throws before the body runs, so failures aren't cached.
@@ -40,7 +42,8 @@ public class SearchService {
         if (sportCode == null || sportCode.isBlank()) {
             return null;
         }
-        return cardQueryStore.findSportId(sportCode)
+        return sportRepository.findByCode(sportCode)
+                .map(Sport::getId)
                 .orElseThrow(() -> new InvalidSportException(sportCode));
     }
 }
