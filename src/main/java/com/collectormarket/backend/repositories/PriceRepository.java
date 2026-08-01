@@ -11,7 +11,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.collectormarket.backend.api.dto.FloorPoint;
-import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.entities.PriceSnapshot;
 
 /**
  * Price-history reads (§8.2, §8.5). The transaction series comes from {@code price_snapshot}

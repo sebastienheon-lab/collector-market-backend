@@ -14,15 +14,15 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
-import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.entities.ListingObservation;
 import com.collectormarket.backend.repositories.ListingObservationRepository;
-import com.collectormarket.backend.domain.MarketMetricDaily;
+import com.collectormarket.backend.entities.MarketMetricDaily;
 import com.collectormarket.backend.repositories.MarketMetricDailyRepository;
-import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.entities.PriceSnapshot;
 import com.collectormarket.backend.repositories.PriceSnapshotRepository;
-import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.entities.Sport;
 import com.collectormarket.backend.repositories.SportRepository;
 
 /**

@@ -12,10 +12,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
-import com.collectormarket.backend.domain.CompetitionEvent;
+import com.collectormarket.backend.entities.CompetitionEvent;
 import com.collectormarket.backend.repositories.CompetitionEventRepository;
-import com.collectormarket.backend.domain.Sport;
-import com.collectormarket.backend.domain.SportCompetition;
+import com.collectormarket.backend.entities.Sport;
+import com.collectormarket.backend.entities.SportCompetition;
 import com.collectormarket.backend.repositories.SportCompetitionRepository;
 import com.collectormarket.backend.repositories.SportRepository;
 

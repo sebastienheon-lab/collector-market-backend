@@ -8,14 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
-import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.entities.CardTracking;
 import com.collectormarket.backend.repositories.CardTrackingRepository;
-import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.entities.ListingObservation;
 import com.collectormarket.backend.repositories.ListingObservationRepository;
 import com.collectormarket.backend.repositories.PriceSnapshotRepository;
-import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.entities.Sport;
 import com.collectormarket.backend.repositories.SportRepository;
 
 /**

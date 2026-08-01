@@ -1,4 +1,4 @@
-package com.collectormarket.backend.domain;
+package com.collectormarket.backend.entities;
 
 import java.time.LocalDate;
 import java.util.UUID;

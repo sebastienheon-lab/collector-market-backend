@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.entities.CardTracking;
 
 class AgingJobTest extends IngestionJpaTestBase {
 

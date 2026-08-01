@@ -12,7 +12,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.entities.CardTracking;
 import com.collectormarket.backend.repositories.CardTrackingRepository;
 import com.jayway.jsonpath.JsonPath;
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.entities.PriceSnapshot;
 
 class RetentionJobTest extends IngestionJpaTestBase {
 

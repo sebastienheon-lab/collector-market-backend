@@ -12,9 +12,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
-import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.entities.Sport;
 import com.collectormarket.backend.repositories.SportRepository;
 
 /**

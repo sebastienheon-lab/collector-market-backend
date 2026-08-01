@@ -7,7 +7,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.collectormarket.backend.api.dto.SearchResultItem;
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 
 /**
  * Postgres-native card search (§8.1). When the query carries name text it ranks by trigram

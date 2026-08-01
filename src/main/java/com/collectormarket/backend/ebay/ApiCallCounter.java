@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.collectormarket.backend.domain.ApiCallCountId;
+import com.collectormarket.backend.entities.ApiCallCountId;
 import com.collectormarket.backend.repositories.ApiCallCountRepository;
 
 /**

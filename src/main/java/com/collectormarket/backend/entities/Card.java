@@ -1,4 +1,4 @@
-package com.collectormarket.backend.domain;
+package com.collectormarket.backend.entities;
 
 import java.util.UUID;
 

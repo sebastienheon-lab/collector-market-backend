@@ -12,8 +12,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.collectormarket.backend.domain.MarketMetricDaily;
-import com.collectormarket.backend.domain.MarketMetricDailyId;
+import com.collectormarket.backend.entities.MarketMetricDaily;
+import com.collectormarket.backend.entities.MarketMetricDailyId;
 
 class DailyAggregatorTest extends IngestionJpaTestBase {
 

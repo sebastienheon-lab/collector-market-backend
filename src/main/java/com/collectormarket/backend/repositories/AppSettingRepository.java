@@ -1,6 +1,6 @@
 package com.collectormarket.backend.repositories;
 
-import com.collectormarket.backend.domain.*;
+import com.collectormarket.backend.entities.*;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

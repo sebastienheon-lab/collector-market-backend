@@ -2,9 +2,9 @@ package com.collectormarket.backend.ingestion;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.entities.ListingObservation;
 import com.collectormarket.backend.repositories.ListingObservationRepository;
-import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.entities.PriceSnapshot;
 import com.collectormarket.backend.repositories.PriceSnapshotRepository;
 
 /**

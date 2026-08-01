@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.entities.CardTracking;
 import com.collectormarket.backend.repositories.CardTrackingRepository;
 
 /**

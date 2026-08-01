@@ -10,7 +10,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.collectormarket.backend.api.dto.RelatedCard;
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 
 /**
  * Related-card suggestions for the empty state (F-11, §8.2). Same-set siblings project straight onto

@@ -8,7 +8,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.collectormarket.backend.api.dto.ActiveListing;
-import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.entities.ListingObservation;
 
 /**
  * Current market view (§8.3): live listings from the most recent day of {@code listing_observation}

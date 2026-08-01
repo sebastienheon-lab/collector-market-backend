@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.catalog.GradeInfo;
 import com.collectormarket.backend.catalog.GradeNormalizer;
-import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.ebay.EbayCallBudgetExceededException;

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.domain.UnmatchedListing;
+import com.collectormarket.backend.entities.UnmatchedListing;
 import com.collectormarket.backend.repositories.UnmatchedListingRepository;
 
 import tools.jackson.databind.ObjectMapper;

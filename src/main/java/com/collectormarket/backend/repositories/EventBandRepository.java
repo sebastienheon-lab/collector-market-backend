@@ -9,7 +9,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.collectormarket.backend.api.dto.EventBand;
-import com.collectormarket.backend.domain.CompetitionEvent;
+import com.collectormarket.backend.entities.CompetitionEvent;
 
 /**
  * Read repository (api layer) for competition event bands (§7.9). Native query - the {@code multi}

@@ -1,4 +1,4 @@
-package com.collectormarket.backend.domain;
+package com.collectormarket.backend.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

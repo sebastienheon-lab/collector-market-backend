@@ -1,6 +1,6 @@
 package com.collectormarket.backend.repositories;
 
-import com.collectormarket.backend.domain.*;
+import com.collectormarket.backend.entities.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
