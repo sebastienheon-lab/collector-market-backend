@@ -65,4 +65,26 @@ public class PriceSnapshot {
 
     @Column(name = "raw_title")
     private String rawTitle;
+
+    /**
+     * Builds an inferred-sale snapshot (§5.1.1): a quantity-sold delta on a fixed-price eBay listing,
+     * priced at the observed ask. Fixes {@code price_type}/{@code source}/{@code platform} to the
+     * inferred-sale constants; the id is generated on insert.
+     */
+    public static PriceSnapshot inferredSale(UUID cardId, BigDecimal salePrice, Instant soldAt,
+            String gradeSource, String gradeValue, String externalId, String externalUrl, String rawTitle) {
+        PriceSnapshot snapshot = new PriceSnapshot();
+        snapshot.cardId = cardId;
+        snapshot.salePrice = salePrice;
+        snapshot.soldAt = soldAt;
+        snapshot.priceType = "INFERRED_SALE";
+        snapshot.source = "EBAY_BROWSE_INFERRED";
+        snapshot.platform = "EBAY";
+        snapshot.gradeSource = gradeSource;
+        snapshot.gradeValue = gradeValue;
+        snapshot.externalId = externalId;
+        snapshot.externalUrl = externalUrl;
+        snapshot.rawTitle = rawTitle;
+        return snapshot;
+    }
 }

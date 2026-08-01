@@ -1,11 +1,14 @@
 package com.collectormarket.backend.ingestion;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.collectormarket.backend.domain.CardTrackingRepository;
 import com.collectormarket.backend.observability.JobMetrics;
 
 /**
@@ -25,12 +28,13 @@ public class AgingJob {
     private static final int DEFAULT_DECAY_DAYS = 14;
     private static final int DEFAULT_PAUSE_DAYS = 60;
 
-    private final JdbcTemplate jdbcTemplate;
+    private final CardTrackingRepository cardTrackingRepository;
     private final AppSettingService appSettingService;
     private final JobMetrics jobMetrics;
 
-    public AgingJob(JdbcTemplate jdbcTemplate, AppSettingService appSettingService, JobMetrics jobMetrics) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AgingJob(CardTrackingRepository cardTrackingRepository, AppSettingService appSettingService,
+            JobMetrics jobMetrics) {
+        this.cardTrackingRepository = cardTrackingRepository;
         this.appSettingService = appSettingService;
         this.jobMetrics = jobMetrics;
     }
@@ -40,21 +44,12 @@ public class AgingJob {
         jobMetrics.run("aging", () -> {
             int decayAfterDays = appSettingService.getInt(DECAY_SETTING, DEFAULT_DECAY_DAYS);
             int pauseAfterDays = appSettingService.getInt(PAUSE_SETTING, DEFAULT_PAUSE_DAYS);
+            Instant now = Instant.now();
 
-            int decayed = jdbcTemplate.update("""
-                    UPDATE card_tracking
-                    SET tier = 'DECAYED', poll_cadence = 'WEEKLY'
-                    WHERE tier = 'SEARCHED'
-                      AND last_engagement_at < now() - make_interval(days => ?)
-                    """, decayAfterDays);
-
-            int paused = jdbcTemplate.update("""
-                    UPDATE card_tracking
-                    SET poll_cadence = 'PAUSED'
-                    WHERE tier = 'DECAYED'
-                      AND poll_cadence <> 'PAUSED'
-                      AND last_engagement_at < now() - make_interval(days => ?)
-                    """, pauseAfterDays);
+            int decayed = cardTrackingRepository.decaySearchedCards(
+                    now.minus(decayAfterDays, ChronoUnit.DAYS));
+            int paused = cardTrackingRepository.pauseDecayedCards(
+                    now.minus(pauseAfterDays, ChronoUnit.DAYS));
 
             log.info("aging_job decayed={} paused={}", decayed, paused);
         });

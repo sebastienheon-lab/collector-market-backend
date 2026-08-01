@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
+import com.collectormarket.backend.domain.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.ebay.EbayProperties;
 import com.collectormarket.backend.observability.JobMetrics;
@@ -38,7 +37,7 @@ class PollerGracefulShutdownTest {
     @Mock private EbayBrowseClient ebayBrowseClient;
     @Mock private InferredSaleDetector inferredSaleDetector;
     @Mock private ListingObservationStore listingObservationStore;
-    @Mock private JdbcTemplate jdbcTemplate;
+    @Mock private CardRepository cardRepository;
 
     private final EbayProperties ebayProperties = new EbayProperties(
             "id", "secret", "https://token", "https://api", 5000, 5000, 10000,
@@ -46,7 +45,7 @@ class PollerGracefulShutdownTest {
 
     private Poller poller() {
         return new Poller(cardTracker, appSettingService, ebayBrowseClient, ebayProperties,
-                inferredSaleDetector, listingObservationStore, jdbcTemplate,
+                inferredSaleDetector, listingObservationStore, cardRepository,
                 new JobMetrics(new SimpleMeterRegistry()));
     }
 
@@ -66,12 +65,12 @@ class PollerGracefulShutdownTest {
         doAnswer(inv -> {
             poller.onContextClosed(null);
             throw new RuntimeException("card one interrupted");
-        }).when(jdbcTemplate).queryForObject(anyString(), any(RowMapper.class), any());
+        }).when(cardRepository).findById(any());
 
         poller.pollDueCards();
 
         // Only card one was reached; cards two and three were never started.
-        verify(jdbcTemplate, times(1)).queryForObject(anyString(), any(RowMapper.class), any());
+        verify(cardRepository, times(1)).findById(any());
         verify(ebayBrowseClient, never()).searchItems(anyString(), anyString());
         verify(cardTracker, never()).recordPolled(any());
     }
@@ -82,12 +81,11 @@ class PollerGracefulShutdownTest {
         when(appSettingService.getInt(anyString(), anyInt())).thenReturn(24);
         when(cardTracker.selectDueForPoll(anyInt())).thenReturn(List.of(tracked(), tracked()));
         // Both cards fail harmlessly at lookup, but with no shutdown the loop still reaches both.
-        doThrow(new RuntimeException("no card info"))
-                .when(jdbcTemplate).queryForObject(anyString(), any(RowMapper.class), any());
+        doThrow(new RuntimeException("no card info")).when(cardRepository).findById(any());
 
         poller.pollDueCards();
 
-        verify(jdbcTemplate, times(2)).queryForObject(anyString(), any(RowMapper.class), any());
+        verify(cardRepository, times(2)).findById(any());
         verify(cardTracker, never()).recordPolled(any());
     }
 }

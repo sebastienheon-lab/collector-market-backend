@@ -7,7 +7,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.domain.PriceSnapshotRepository;
 
 @SpringBootTest
 @Transactional
@@ -26,6 +28,9 @@ class InferredSaleDetectorTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private PriceSnapshotRepository priceSnapshotRepository;
+
     @Test
     void quantityIncreaseWritesOneInferredSalePerUnit() {
         UUID cardId = insertTestCard();
@@ -34,15 +39,15 @@ class InferredSaleDetectorTest {
 
         detector.detect(observation(cardId, listingId, "FIXED_PRICE", 5));
 
-        List<Map<String, Object>> rows = priceSnapshotRows(listingId);
+        List<PriceSnapshot> rows = priceSnapshotRows(listingId);
         assertThat(rows).hasSize(3);
         assertThat(rows).allSatisfy(row -> {
-            assertThat(row.get("price_type")).isEqualTo("INFERRED_SALE");
-            assertThat(row.get("source")).isEqualTo("EBAY_BROWSE_INFERRED");
-            assertThat(((BigDecimal) row.get("sale_price"))).isEqualByComparingTo("25.00");
+            assertThat(row.getPriceType()).isEqualTo("INFERRED_SALE");
+            assertThat(row.getSource()).isEqualTo("EBAY_BROWSE_INFERRED");
+            assertThat(row.getSalePrice()).isEqualByComparingTo("25.00");
         });
         // distinct synthetic external_ids, one per inferred unit
-        assertThat(rows.stream().map(r -> r.get("external_id")).distinct()).hasSize(3);
+        assertThat(rows.stream().map(PriceSnapshot::getExternalId).distinct()).hasSize(3);
     }
 
     @Test
@@ -117,9 +122,10 @@ class InferredSaleDetectorTest {
                 new BigDecimal("25.00"), quantitySold);
     }
 
-    private List<Map<String, Object>> priceSnapshotRows(String listingIdPrefix) {
-        return jdbcTemplate.queryForList(
-                "SELECT * FROM price_snapshot WHERE external_id LIKE ?", listingIdPrefix + "%");
+    // Read via the repository, not raw SQL: a derived-query read auto-flushes the pending JPA
+    // inserts first, so they're visible inside this @Transactional test's session.
+    private List<PriceSnapshot> priceSnapshotRows(String listingIdPrefix) {
+        return priceSnapshotRepository.findByExternalIdStartingWith(listingIdPrefix);
     }
 
     private UUID insertTestCard() {

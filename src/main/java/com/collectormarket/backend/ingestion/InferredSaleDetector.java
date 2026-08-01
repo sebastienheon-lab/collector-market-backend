@@ -1,9 +1,11 @@
 package com.collectormarket.backend.ingestion;
 
-import static com.collectormarket.backend.ingestion.JdbcTimestamps.toTimestamp;
-
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.domain.ListingObservationRepository;
+import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.domain.PriceSnapshotRepository;
 
 /**
  * §5.1.1 inferred-sale rule: a quantity_sold increase of N between consecutive fixed-price
@@ -19,10 +21,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class InferredSaleDetector {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final ListingObservationRepository listingObservationRepository;
+    private final PriceSnapshotRepository priceSnapshotRepository;
 
-    public InferredSaleDetector(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public InferredSaleDetector(ListingObservationRepository listingObservationRepository,
+            PriceSnapshotRepository priceSnapshotRepository) {
+        this.listingObservationRepository = listingObservationRepository;
+        this.priceSnapshotRepository = priceSnapshotRepository;
     }
 
     public void detect(ObservationInput newObservation) {
@@ -30,14 +35,10 @@ public class InferredSaleDetector {
             return;
         }
 
-        Integer priorQuantitySold = jdbcTemplate.query("""
-                SELECT quantity_sold FROM listing_observation
-                WHERE external_listing_id = ?
-                ORDER BY observed_at DESC
-                LIMIT 1
-                """,
-                rs -> rs.next() ? (Integer) rs.getObject("quantity_sold") : null,
-                newObservation.externalListingId());
+        Integer priorQuantitySold = listingObservationRepository
+                .findFirstByExternalListingIdOrderByObservedAtDesc(newObservation.externalListingId())
+                .map(ListingObservation::getQuantitySold)
+                .orElse(null);
 
         if (priorQuantitySold == null) {
             return;
@@ -50,15 +51,10 @@ public class InferredSaleDetector {
 
         for (int unit = 1; unit <= delta; unit++) {
             String syntheticExternalId = newObservation.externalListingId() + "#" + (priorQuantitySold + unit);
-            jdbcTemplate.update("""
-                    INSERT INTO price_snapshot
-                        (card_id, sale_price, sold_at, price_type, source, grade_source, grade_value,
-                         platform, external_id, external_url, raw_title)
-                    VALUES (?, ?, ?, 'INFERRED_SALE', 'EBAY_BROWSE_INFERRED', ?, ?, 'EBAY', ?, ?, ?)
-                    """,
-                    newObservation.cardId(), newObservation.askPrice(), toTimestamp(newObservation.observedAt()),
+            priceSnapshotRepository.save(PriceSnapshot.inferredSale(
+                    newObservation.cardId(), newObservation.askPrice(), newObservation.observedAt(),
                     newObservation.gradeSource(), newObservation.gradeValue(),
-                    syntheticExternalId, newObservation.externalUrl(), newObservation.rawTitle());
+                    syntheticExternalId, newObservation.externalUrl(), newObservation.rawTitle()));
         }
     }
 }

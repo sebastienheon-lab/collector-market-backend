@@ -14,6 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.domain.CardTrackingRepository;
+
 @SpringBootTest
 @Transactional
 class CardTrackerTest {
@@ -25,6 +28,9 @@ class CardTrackerTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private CardTrackingRepository cardTrackingRepository;
 
     @Test
     void selectDueForPoll_includesNeverPolledCards() {
@@ -127,9 +133,10 @@ class CardTrackerTest {
 
         cardTracker.upsertWatchlisted(cardId);
 
-        String tier = jdbcTemplate.queryForObject(
-                "SELECT tier FROM card_tracking WHERE card_id = ?", String.class, cardId);
-        assertThat(tier).isEqualTo("WATCHLISTED");
+        // Insert path writes via JPA save(); read via the repository so it's visible in-session
+        // (raw SQL on the same connection wouldn't see the unflushed insert).
+        CardTracking tracking = cardTrackingRepository.findById(cardId).orElseThrow();
+        assertThat(tracking.getTier()).isEqualTo("WATCHLISTED");
     }
 
     @Test

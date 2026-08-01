@@ -9,12 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.catalog.GradeInfo;
 import com.collectormarket.backend.catalog.GradeNormalizer;
+import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.domain.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.ebay.EbayCallBudgetExceededException;
 import com.collectormarket.backend.ebay.EbayProperties;
@@ -51,7 +52,7 @@ public class Poller {
     private final EbayProperties ebayProperties;
     private final InferredSaleDetector inferredSaleDetector;
     private final ListingObservationStore listingObservationStore;
-    private final JdbcTemplate jdbcTemplate;
+    private final CardRepository cardRepository;
     private final JobMetrics jobMetrics;
 
     // Flipped by the ContextClosedEvent on shutdown so an in-flight tick stops at the next card
@@ -65,7 +66,7 @@ public class Poller {
             EbayProperties ebayProperties,
             InferredSaleDetector inferredSaleDetector,
             ListingObservationStore listingObservationStore,
-            JdbcTemplate jdbcTemplate,
+            CardRepository cardRepository,
             JobMetrics jobMetrics) {
         this.cardTracker = cardTracker;
         this.appSettingService = appSettingService;
@@ -73,7 +74,7 @@ public class Poller {
         this.ebayProperties = ebayProperties;
         this.inferredSaleDetector = inferredSaleDetector;
         this.listingObservationStore = listingObservationStore;
-        this.jdbcTemplate = jdbcTemplate;
+        this.cardRepository = cardRepository;
         this.jobMetrics = jobMetrics;
     }
 
@@ -156,11 +157,11 @@ public class Poller {
     }
 
     private CardInfo lookupCardInfo(UUID cardId) {
-        return jdbcTemplate.queryForObject(
-                "SELECT player_name, year, brand, set_name FROM card WHERE id = ?",
-                (rs, rowNum) -> new CardInfo(
-                        rs.getString("player_name"), rs.getInt("year"), rs.getString("brand"), rs.getString("set_name")),
-                cardId);
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new IllegalStateException("No card for id " + cardId));
+        return new CardInfo(card.getPlayerName(),
+                card.getYear() != null ? card.getYear().intValue() : null,
+                card.getBrand(), card.getSetName());
     }
 
     private String buildSearchQuery(CardInfo info) {

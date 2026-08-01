@@ -1,10 +1,11 @@
 package com.collectormarket.backend.ingestion;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.api.config.CacheConfig;
+import com.collectormarket.backend.domain.AppSetting;
+import com.collectormarket.backend.domain.AppSettingRepository;
 
 /**
  * Raw {@code app_setting} reads, cached in the {@code appSetting} Caffeine cache (60 s TTL, §7.12).
@@ -17,17 +18,14 @@ import com.collectormarket.backend.api.config.CacheConfig;
 @Component
 public class AppSettingStore {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final AppSettingRepository appSettingRepository;
 
-    public AppSettingStore(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AppSettingStore(AppSettingRepository appSettingRepository) {
+        this.appSettingRepository = appSettingRepository;
     }
 
     @Cacheable(CacheConfig.APP_SETTING)
     public String getRaw(String key) {
-        return jdbcTemplate.query(
-                "SELECT value FROM app_setting WHERE key = ?",
-                rs -> rs.next() ? rs.getString("value") : null,
-                key);
+        return appSettingRepository.findById(key).map(AppSetting::getValue).orElse(null);
     }
 }

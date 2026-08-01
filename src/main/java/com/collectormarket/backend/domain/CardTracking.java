@@ -40,4 +40,12 @@ public class CardTracking {
 
     @Column(name = "last_engagement_at", nullable = false)
     private Instant lastEngagementAt;
+
+    /** Creates a new tracking row (used by the watchlist upsert's insert half). */
+    public CardTracking(UUID cardId, String tier, String pollCadence, Instant lastEngagementAt) {
+        this.cardId = cardId;
+        this.tier = tier;
+        this.pollCadence = pollCadence;
+        this.lastEngagementAt = lastEngagementAt;
+    }
 }
