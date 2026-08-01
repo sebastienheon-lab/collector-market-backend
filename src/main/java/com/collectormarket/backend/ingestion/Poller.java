@@ -24,6 +24,7 @@ import com.collectormarket.backend.ebay.dto.ItemSearchResult;
 import com.collectormarket.backend.ebay.dto.ItemSummary;
 import com.collectormarket.backend.ebay.dto.ListingFormat;
 import com.collectormarket.backend.observability.JobMetrics;
+import com.collectormarket.backend.services.AppSettingService;
 
 /**
  * §5.1.1 active-listing poller. Assumes single-instance deployment; introduce ShedLock or

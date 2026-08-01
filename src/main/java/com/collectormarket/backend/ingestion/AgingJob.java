@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.domain.CardTrackingRepository;
 import com.collectormarket.backend.observability.JobMetrics;
+import com.collectormarket.backend.services.AppSettingService;
 
 /**
  * §7.10 nightly aging: SEARCHED -&gt; DECAYED after {@code tracking.decay_after_days} without

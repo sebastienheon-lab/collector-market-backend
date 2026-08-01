@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api;
+package com.collectormarket.backend.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.collectormarket.backend.api.Grade;
+import com.collectormarket.backend.api.MarketQueryStore;
 import com.collectormarket.backend.api.dto.ActiveListing;
 import com.collectormarket.backend.api.dto.MarketView;
 

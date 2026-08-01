@@ -1,10 +1,15 @@
-package com.collectormarket.backend.catalog;
+package com.collectormarket.backend.services;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+
+import com.collectormarket.backend.catalog.CardCatalogLookup;
+import com.collectormarket.backend.catalog.ParsedTitle;
+import com.collectormarket.backend.catalog.TitleParser;
+import com.collectormarket.backend.catalog.UnmatchedListingRecorder;
 
 /**
  * Entry point for turning a raw eBay listing title into a canonical card id (§10 Phase 1).

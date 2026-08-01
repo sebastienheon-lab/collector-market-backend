@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api;
+package com.collectormarket.backend.services;
 
 import java.util.UUID;
 

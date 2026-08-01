@@ -1,10 +1,16 @@
-package com.collectormarket.backend.api;
+package com.collectormarket.backend.services;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.collectormarket.backend.api.EventQueryStore;
+import com.collectormarket.backend.api.Grade;
+import com.collectormarket.backend.api.PriceQueryStore;
+import com.collectormarket.backend.api.RelatedCardsQueryStore;
+import com.collectormarket.backend.api.SaleCursor;
+import com.collectormarket.backend.api.TimeRangeDays;
 import com.collectormarket.backend.api.dto.EventBand;
 import com.collectormarket.backend.api.dto.FloorPoint;
 import com.collectormarket.backend.api.dto.PriceHistoryResponse;

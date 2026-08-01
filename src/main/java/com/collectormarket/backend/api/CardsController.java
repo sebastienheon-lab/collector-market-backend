@@ -14,6 +14,11 @@ import com.collectormarket.backend.api.dto.GradeBreakdownResponse;
 import com.collectormarket.backend.api.dto.MarketView;
 import com.collectormarket.backend.api.dto.PriceHistoryResponse;
 import com.collectormarket.backend.api.dto.SearchResponse;
+import com.collectormarket.backend.services.CardService;
+import com.collectormarket.backend.services.GradeBreakdownService;
+import com.collectormarket.backend.services.MarketService;
+import com.collectormarket.backend.services.PriceHistoryService;
+import com.collectormarket.backend.services.SearchService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;

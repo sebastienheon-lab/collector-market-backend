@@ -1,6 +1,8 @@
-package com.collectormarket.backend.ingestion;
+package com.collectormarket.backend.services;
 
 import org.springframework.stereotype.Component;
+
+import com.collectormarket.backend.ingestion.AppSettingStore;
 
 /**
  * Typed reader for {@code app_setting} (§7.12), the runtime-tunable operational knobs (aging

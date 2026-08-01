@@ -1,11 +1,13 @@
-package com.collectormarket.backend.api;
+package com.collectormarket.backend.services;
 
 import java.util.List;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import com.collectormarket.backend.api.SearchQueryParser;
 import com.collectormarket.backend.api.SearchQueryParser.ParsedQuery;
+import com.collectormarket.backend.api.SearchQueryStore;
 import com.collectormarket.backend.api.config.CacheConfig;
 import com.collectormarket.backend.api.dto.SearchResponse;
 import com.collectormarket.backend.api.dto.SearchResultItem;

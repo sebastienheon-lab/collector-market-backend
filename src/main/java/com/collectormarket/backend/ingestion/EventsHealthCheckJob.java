@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.domain.SportCompetitionRepository;
 import com.collectormarket.backend.observability.JobMetrics;
+import com.collectormarket.backend.services.AppSettingService;
 
 /**
  * §7.8-7.9 / OQ-15 weekly forgetting-safety check: warns when an active competition has fewer

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.collectormarket.backend.domain.CardRepository;
 import com.collectormarket.backend.domain.UnmatchedListingRepository;
+import com.collectormarket.backend.services.CardNormalizationService;
 
 /**
  * M4 DoD: a batch of 50 representative eBay titles yields canonical card IDs for the seeded
