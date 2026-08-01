@@ -1,5 +1,7 @@
 package com.collectormarket.backend.api.error;
 
+import com.collectormarket.backend.exceptions.ApiException;
+
 import java.time.Instant;
 
 import org.slf4j.Logger;

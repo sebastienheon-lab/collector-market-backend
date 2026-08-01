@@ -11,7 +11,7 @@ import com.collectormarket.backend.api.SearchQueryStore;
 import com.collectormarket.backend.configs.CacheConfig;
 import com.collectormarket.backend.dto.SearchResponse;
 import com.collectormarket.backend.dto.SearchResultItem;
-import com.collectormarket.backend.api.error.InvalidSportException;
+import com.collectormarket.backend.exceptions.InvalidSportException;
 import com.collectormarket.backend.entities.Sport;
 import com.collectormarket.backend.repositories.SportRepository;
 

@@ -2,7 +2,7 @@ package com.collectormarket.backend.api;
 
 import java.util.Set;
 
-import com.collectormarket.backend.api.error.InvalidDaysException;
+import com.collectormarket.backend.exceptions.InvalidDaysException;
 
 /**
  * The {@code days} filter (F-05) is restricted to a fixed set of windows. Kept as an int on the

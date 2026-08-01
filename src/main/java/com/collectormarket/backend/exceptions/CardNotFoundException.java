@@ -1,4 +1,6 @@
-package com.collectormarket.backend.api.error;
+package com.collectormarket.backend.exceptions;
+
+import com.collectormarket.backend.api.error.ErrorCode;
 
 import java.util.UUID;
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.collectormarket.backend.configs.CacheConfig;
 import com.collectormarket.backend.dto.CardDetail;
-import com.collectormarket.backend.api.error.CardNotFoundException;
+import com.collectormarket.backend.exceptions.CardNotFoundException;
 import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
 

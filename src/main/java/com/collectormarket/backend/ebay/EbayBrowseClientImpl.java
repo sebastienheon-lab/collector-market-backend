@@ -1,5 +1,9 @@
 package com.collectormarket.backend.ebay;
 
+import com.collectormarket.backend.exceptions.EbayApiException;
+import com.collectormarket.backend.exceptions.EbayCallBudgetExceededException;
+import com.collectormarket.backend.exceptions.EbayTransientApiException;
+
 import com.collectormarket.backend.properties.EbayProperties;
 
 import java.time.Duration;

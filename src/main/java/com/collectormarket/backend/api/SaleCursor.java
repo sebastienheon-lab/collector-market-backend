@@ -6,7 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.UUID;
 
-import com.collectormarket.backend.api.error.InvalidCursorException;
+import com.collectormarket.backend.exceptions.InvalidCursorException;
 
 /**
  * Opaque keyset cursor for the price-history {@code sales} array. Encodes the {@code (sold_at, id)}
