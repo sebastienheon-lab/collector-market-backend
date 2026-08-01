@@ -1,4 +1,4 @@
-package com.collectormarket.backend.ebay.dto;
+package com.collectormarket.backend.dto;
 
 /** Minimal pagination controls for {@code searchItems}. Grows as ingestion (M5) needs more. */
 public record SearchFilters(Integer limit, Integer offset) {

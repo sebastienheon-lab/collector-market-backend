@@ -3,7 +3,7 @@ package com.collectormarket.backend.services;
 import java.util.UUID;
 
 import com.collectormarket.backend.api.Grade;
-import com.collectormarket.backend.api.dto.PriceHistoryResponse;
+import com.collectormarket.backend.dto.PriceHistoryResponse;
 
 /**
  * Price history (§8.2): the separate {@code sales} and {@code floorHistory} series (F-07), event

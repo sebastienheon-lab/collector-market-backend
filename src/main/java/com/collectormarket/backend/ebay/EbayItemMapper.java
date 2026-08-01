@@ -3,10 +3,10 @@ package com.collectormarket.backend.ebay;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.collectormarket.backend.ebay.dto.ItemDetail;
-import com.collectormarket.backend.ebay.dto.ItemSearchResult;
-import com.collectormarket.backend.ebay.dto.ItemSummary;
-import com.collectormarket.backend.ebay.dto.ListingFormat;
+import com.collectormarket.backend.dto.ItemDetail;
+import com.collectormarket.backend.dto.ItemSearchResult;
+import com.collectormarket.backend.dto.ItemSummary;
+import com.collectormarket.backend.dto.ListingFormat;
 import com.collectormarket.backend.ebay.internal.EbayEstimatedAvailabilityRaw;
 import com.collectormarket.backend.ebay.internal.EbayItemDetailRaw;
 import com.collectormarket.backend.ebay.internal.EbayItemSummaryRaw;

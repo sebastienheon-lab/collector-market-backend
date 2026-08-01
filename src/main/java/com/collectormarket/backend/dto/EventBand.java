@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api.dto;
+package com.collectormarket.backend.dto;
 
 import java.time.LocalDate;
 

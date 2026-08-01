@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api.dto;
+package com.collectormarket.backend.dto;
 
 import java.util.List;
 import java.util.UUID;

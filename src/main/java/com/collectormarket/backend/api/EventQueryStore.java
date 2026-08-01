@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.api.dto.EventBand;
+import com.collectormarket.backend.dto.EventBand;
 
 /**
  * Competition event bands for a card's price chart (§7.9 selection rule): events whose competition

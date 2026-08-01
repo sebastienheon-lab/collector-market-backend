@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 import com.collectormarket.backend.repositories.PriceRepository.LastSale;
 import com.collectormarket.backend.repositories.PriceRepository.PriceSummaryAgg;
 import com.collectormarket.backend.repositories.PriceRepository.SaleRow;
-import com.collectormarket.backend.api.dto.FloorPoint;
-import com.collectormarket.backend.api.dto.GradeAverage;
-import com.collectormarket.backend.api.dto.PriceSummary;
-import com.collectormarket.backend.api.dto.Sale;
-import com.collectormarket.backend.api.dto.SalesPage;
+import com.collectormarket.backend.dto.FloorPoint;
+import com.collectormarket.backend.dto.GradeAverage;
+import com.collectormarket.backend.dto.PriceSummary;
+import com.collectormarket.backend.dto.Sale;
+import com.collectormarket.backend.dto.SalesPage;
 
 /**
  * Price-history reads (§8.2, §8.5), orchestrating {@link PriceRepository}. The transaction series

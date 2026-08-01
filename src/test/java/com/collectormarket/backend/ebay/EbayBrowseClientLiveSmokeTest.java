@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.collectormarket.backend.ebay.dto.ItemSearchResult;
+import com.collectormarket.backend.dto.ItemSearchResult;
 
 /**
  * M3 DoD: {@code EbayBrowseClient.searchItems("2018 Topps Ohtani", tradingCardsCategoryId)}

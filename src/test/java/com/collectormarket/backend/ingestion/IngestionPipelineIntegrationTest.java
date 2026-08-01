@@ -35,10 +35,10 @@ import com.collectormarket.backend.repositories.PriceSnapshotRepository;
 import com.collectormarket.backend.entities.Sport;
 import com.collectormarket.backend.repositories.SportRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
-import com.collectormarket.backend.ebay.dto.ItemDetail;
-import com.collectormarket.backend.ebay.dto.ItemSearchResult;
-import com.collectormarket.backend.ebay.dto.ItemSummary;
-import com.collectormarket.backend.ebay.dto.ListingFormat;
+import com.collectormarket.backend.dto.ItemDetail;
+import com.collectormarket.backend.dto.ItemSearchResult;
+import com.collectormarket.backend.dto.ItemSummary;
+import com.collectormarket.backend.dto.ListingFormat;
 
 import reactor.core.publisher.Mono;
 

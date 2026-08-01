@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.collectormarket.backend.api.Grade;
 import com.collectormarket.backend.api.MarketQueryStore;
-import com.collectormarket.backend.api.dto.ActiveListing;
-import com.collectormarket.backend.api.dto.MarketView;
+import com.collectormarket.backend.dto.ActiveListing;
+import com.collectormarket.backend.dto.MarketView;
 
 /**
  * Default {@link MarketService}. Floor/median/active-count are computed in-process from the same

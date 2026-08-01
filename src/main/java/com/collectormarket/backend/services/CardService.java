@@ -2,7 +2,7 @@ package com.collectormarket.backend.services;
 
 import java.util.UUID;
 
-import com.collectormarket.backend.api.dto.CardDetail;
+import com.collectormarket.backend.dto.CardDetail;
 import com.collectormarket.backend.api.error.CardNotFoundException;
 
 /** Card-detail lookups (§8.4) and the shared existence guard used by the other endpoints. */

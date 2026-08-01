@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.collectormarket.backend.api.dto.CardDetail;
-import com.collectormarket.backend.api.dto.GradeBreakdownResponse;
-import com.collectormarket.backend.api.dto.MarketView;
-import com.collectormarket.backend.api.dto.PriceHistoryResponse;
-import com.collectormarket.backend.api.dto.SearchResponse;
+import com.collectormarket.backend.dto.CardDetail;
+import com.collectormarket.backend.dto.GradeBreakdownResponse;
+import com.collectormarket.backend.dto.MarketView;
+import com.collectormarket.backend.dto.PriceHistoryResponse;
+import com.collectormarket.backend.dto.SearchResponse;
 import com.collectormarket.backend.services.CardService;
 import com.collectormarket.backend.services.GradeBreakdownService;
 import com.collectormarket.backend.services.MarketService;

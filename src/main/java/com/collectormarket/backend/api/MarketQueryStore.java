@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.api.dto.ActiveListing;
+import com.collectormarket.backend.dto.ActiveListing;
 
 /**
  * Current market view (§8.3), read from the most recent day of {@code listing_observation} rows for

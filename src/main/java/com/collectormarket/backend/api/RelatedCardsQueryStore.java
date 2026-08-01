@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.repositories.RelatedCardsRepository.GradeSaleRow;
-import com.collectormarket.backend.api.dto.RelatedCard;
+import com.collectormarket.backend.dto.RelatedCard;
 
 /**
  * Related-card suggestions for the empty-state (F-11, OQ-5, §8.2). Similarity rule: same player,

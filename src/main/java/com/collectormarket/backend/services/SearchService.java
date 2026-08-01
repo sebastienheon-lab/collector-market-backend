@@ -1,6 +1,6 @@
 package com.collectormarket.backend.services;
 
-import com.collectormarket.backend.api.dto.SearchResponse;
+import com.collectormarket.backend.dto.SearchResponse;
 import com.collectormarket.backend.api.error.InvalidSportException;
 
 /** Card search (§8.1): trigram ranking on player name, optional sport filter, offset pagination. */

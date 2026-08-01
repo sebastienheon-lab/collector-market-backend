@@ -11,12 +11,12 @@ import com.collectormarket.backend.api.PriceQueryStore;
 import com.collectormarket.backend.api.RelatedCardsQueryStore;
 import com.collectormarket.backend.api.SaleCursor;
 import com.collectormarket.backend.api.TimeRangeDays;
-import com.collectormarket.backend.api.dto.EventBand;
-import com.collectormarket.backend.api.dto.FloorPoint;
-import com.collectormarket.backend.api.dto.PriceHistoryResponse;
-import com.collectormarket.backend.api.dto.PriceSummary;
-import com.collectormarket.backend.api.dto.RelatedCard;
-import com.collectormarket.backend.api.dto.SalesPage;
+import com.collectormarket.backend.dto.EventBand;
+import com.collectormarket.backend.dto.FloorPoint;
+import com.collectormarket.backend.dto.PriceHistoryResponse;
+import com.collectormarket.backend.dto.PriceSummary;
+import com.collectormarket.backend.dto.RelatedCard;
+import com.collectormarket.backend.dto.SalesPage;
 import com.collectormarket.backend.ingestion.CardTracker;
 
 /**

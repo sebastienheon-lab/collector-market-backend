@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-import com.collectormarket.backend.api.dto.ActiveListing;
+import com.collectormarket.backend.dto.ActiveListing;
 import com.collectormarket.backend.entities.ListingObservation;
 
 /**

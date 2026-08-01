@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.api.SearchQueryParser.ParsedQuery;
-import com.collectormarket.backend.api.dto.SearchResultItem;
+import com.collectormarket.backend.dto.SearchResultItem;
 
 /**
  * Postgres-native card search (§8.1), delegating to {@link SearchRepository}. Ranks by trigram

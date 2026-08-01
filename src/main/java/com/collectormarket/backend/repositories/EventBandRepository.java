@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-import com.collectormarket.backend.api.dto.EventBand;
+import com.collectormarket.backend.dto.EventBand;
 import com.collectormarket.backend.entities.CompetitionEvent;
 
 /**

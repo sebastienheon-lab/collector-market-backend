@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.collectormarket.backend.api.PriceQueryStore;
 import com.collectormarket.backend.api.TimeRangeDays;
-import com.collectormarket.backend.api.dto.GradeBreakdownResponse;
+import com.collectormarket.backend.dto.GradeBreakdownResponse;
 
 /** Default {@link GradeBreakdownService}: average sale price per grade over the window. */
 @Service

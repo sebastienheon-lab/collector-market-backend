@@ -24,9 +24,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.collectormarket.backend.ebay.dto.ItemDetail;
-import com.collectormarket.backend.ebay.dto.ItemSearchResult;
-import com.collectormarket.backend.ebay.dto.ListingFormat;
+import com.collectormarket.backend.dto.ItemDetail;
+import com.collectormarket.backend.dto.ItemSearchResult;
+import com.collectormarket.backend.dto.ListingFormat;
 import com.collectormarket.backend.observability.EbayCallState;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 

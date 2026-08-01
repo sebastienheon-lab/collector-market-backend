@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.collectormarket.backend.ebay.dto.ItemDetail;
-import com.collectormarket.backend.ebay.dto.ItemSearchResult;
-import com.collectormarket.backend.ebay.dto.SearchFilters;
+import com.collectormarket.backend.dto.ItemDetail;
+import com.collectormarket.backend.dto.ItemSearchResult;
+import com.collectormarket.backend.dto.SearchFilters;
 import com.collectormarket.backend.ebay.internal.EbayItemDetailRaw;
 import com.collectormarket.backend.ebay.internal.EbaySearchResponse;
 import com.collectormarket.backend.observability.EbayCallState;

@@ -1,4 +1,4 @@
-package com.collectormarket.backend.ebay.dto;
+package com.collectormarket.backend.dto;
 
 import java.math.BigDecimal;
 
