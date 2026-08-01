@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ebay;
 
+import com.collectormarket.backend.properties.EbayProperties;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;

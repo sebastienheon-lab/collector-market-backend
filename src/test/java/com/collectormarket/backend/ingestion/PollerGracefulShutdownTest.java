@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.collectormarket.backend.repositories.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.services.AppSettingService;
-import com.collectormarket.backend.ebay.EbayProperties;
+import com.collectormarket.backend.properties.EbayProperties;
 import com.collectormarket.backend.observability.JobMetrics;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;

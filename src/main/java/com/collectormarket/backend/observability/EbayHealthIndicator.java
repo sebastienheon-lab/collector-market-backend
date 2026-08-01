@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.collectormarket.backend.ebay.ApiCallCounter;
 import com.collectormarket.backend.ebay.EbayOAuthTokenProvider;
-import com.collectormarket.backend.ebay.EbayProperties;
+import com.collectormarket.backend.properties.EbayProperties;
 
 /**
  * Reports on the eBay integration from <em>cached state only</em> - last successful call, quota

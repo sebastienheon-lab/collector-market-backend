@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ebay;
 
+import com.collectormarket.backend.properties.EbayProperties;
+
 import java.time.Duration;
 import java.util.function.Function;
 

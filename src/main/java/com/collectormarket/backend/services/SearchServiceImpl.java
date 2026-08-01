@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.collectormarket.backend.api.SearchQueryParser;
 import com.collectormarket.backend.api.SearchQueryParser.ParsedQuery;
 import com.collectormarket.backend.api.SearchQueryStore;
-import com.collectormarket.backend.api.config.CacheConfig;
+import com.collectormarket.backend.configs.CacheConfig;
 import com.collectormarket.backend.dto.SearchResponse;
 import com.collectormarket.backend.dto.SearchResultItem;
 import com.collectormarket.backend.api.error.InvalidSportException;

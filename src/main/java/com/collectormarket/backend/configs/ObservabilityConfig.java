@@ -1,9 +1,9 @@
-package com.collectormarket.backend.observability;
+package com.collectormarket.backend.configs;
 
 import org.springframework.context.annotation.Configuration;
 
 import com.collectormarket.backend.ebay.ApiCallCounter;
-import com.collectormarket.backend.ebay.EbayProperties;
+import com.collectormarket.backend.properties.EbayProperties;
 import com.collectormarket.backend.ingestion.CardTier;
 import com.collectormarket.backend.ingestion.CardTracker;
 

@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api.config;
+package com.collectormarket.backend.configs;
 
 import java.time.Duration;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api.config;
+package com.collectormarket.backend.properties;
 
 import java.util.List;
 

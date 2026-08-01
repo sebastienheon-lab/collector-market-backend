@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ebay;
 
+import com.collectormarket.backend.properties.EbayProperties;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Tag;

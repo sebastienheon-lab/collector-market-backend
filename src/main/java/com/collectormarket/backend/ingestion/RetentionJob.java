@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ingestion;
 
+import com.collectormarket.backend.properties.RetentionProperties;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 

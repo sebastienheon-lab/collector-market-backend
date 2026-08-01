@@ -15,7 +15,7 @@ import org.springframework.boot.health.contributor.Status;
 
 import com.collectormarket.backend.ebay.ApiCallCounter;
 import com.collectormarket.backend.ebay.EbayOAuthTokenProvider;
-import com.collectormarket.backend.ebay.EbayProperties;
+import com.collectormarket.backend.properties.EbayProperties;
 
 /**
  * The eBay health indicator reports purely from cached state - none of its collaborators is a

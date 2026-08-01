@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
 
-import com.collectormarket.backend.api.config.CacheConfig;
+import com.collectormarket.backend.configs.CacheConfig;
 
 /**
  * M7 DoD: Micrometer metrics are visible at {@code /actuator/metrics}, cache hits/misses are

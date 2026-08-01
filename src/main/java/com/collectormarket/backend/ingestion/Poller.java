@@ -18,7 +18,7 @@ import com.collectormarket.backend.entities.Card;
 import com.collectormarket.backend.repositories.CardRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.ebay.EbayCallBudgetExceededException;
-import com.collectormarket.backend.ebay.EbayProperties;
+import com.collectormarket.backend.properties.EbayProperties;
 import com.collectormarket.backend.dto.ItemDetail;
 import com.collectormarket.backend.dto.ItemSearchResult;
 import com.collectormarket.backend.dto.ItemSummary;

@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ingestion;
 
+import com.collectormarket.backend.properties.RetentionProperties;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;

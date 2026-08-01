@@ -1,4 +1,4 @@
-package com.collectormarket.backend.ingestion;
+package com.collectormarket.backend.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

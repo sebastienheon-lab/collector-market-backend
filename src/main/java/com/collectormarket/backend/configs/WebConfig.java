@@ -1,4 +1,6 @@
-package com.collectormarket.backend.api.config;
+package com.collectormarket.backend.configs;
+
+import com.collectormarket.backend.properties.CorsProperties;
 
 import java.util.List;
 

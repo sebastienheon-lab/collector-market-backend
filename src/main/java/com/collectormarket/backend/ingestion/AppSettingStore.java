@@ -3,7 +3,7 @@ package com.collectormarket.backend.ingestion;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import com.collectormarket.backend.api.config.CacheConfig;
+import com.collectormarket.backend.configs.CacheConfig;
 import com.collectormarket.backend.entities.AppSetting;
 import com.collectormarket.backend.repositories.AppSettingRepository;
 

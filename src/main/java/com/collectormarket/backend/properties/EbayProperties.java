@@ -1,4 +1,4 @@
-package com.collectormarket.backend.ebay;
+package com.collectormarket.backend.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

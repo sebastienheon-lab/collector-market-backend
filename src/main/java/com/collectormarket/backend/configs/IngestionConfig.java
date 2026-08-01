@@ -1,4 +1,6 @@
-package com.collectormarket.backend.ingestion;
+package com.collectormarket.backend.configs;
+
+import com.collectormarket.backend.properties.RetentionProperties;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

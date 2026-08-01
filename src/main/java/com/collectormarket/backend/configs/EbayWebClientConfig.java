@@ -1,4 +1,6 @@
-package com.collectormarket.backend.ebay;
+package com.collectormarket.backend.configs;
+
+import com.collectormarket.backend.properties.EbayProperties;
 
 import java.time.Duration;
 

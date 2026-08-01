@@ -1,4 +1,4 @@
-package com.collectormarket.backend.api.config;
+package com.collectormarket.backend.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

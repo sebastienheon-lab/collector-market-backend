@@ -1,5 +1,7 @@
 package com.collectormarket.backend.ebay;
 
+import com.collectormarket.backend.properties.EbayProperties;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
