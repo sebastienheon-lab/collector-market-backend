@@ -10,10 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * JPA mapping of the {@code sport} lookup table (§7.2). First entity of the JPA pilot (the rest of
- * the persistence layer is JdbcTemplate). Flyway owns the schema; {@code ddl-auto: validate} checks
- * this mapping against it at boot. {@code id} is a manually-assigned SMALLINT (seeded by V001), so
- * no {@code @GeneratedValue}.
+ * JPA mapping of the {@code sport} lookup table (§7.2). Flyway owns the schema; {@code ddl-auto:
+ * validate} checks this mapping against it at boot. {@code id} is a manually-assigned SMALLINT
+ * (seeded by V001), so no {@code @GeneratedValue}.
  * <p>
  * Lombok is limited to {@code @Getter}/{@code @Setter} + a protected no-arg constructor -
  * deliberately NOT {@code @Data}/{@code @ToString}/{@code @EqualsAndHashCode}, which are unsafe on

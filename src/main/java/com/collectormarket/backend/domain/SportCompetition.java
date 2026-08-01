@@ -32,4 +32,12 @@ public class SportCompetition {
 
     @Column(name = "is_active", nullable = false)
     private boolean active;
+
+    /** Assigned-id row for the reference-data upsert (save() merges by the given id). */
+    public SportCompetition(Short id, Short sportId, String name, boolean active) {
+        this.id = id;
+        this.sportId = sportId;
+        this.name = name;
+        this.active = active;
+    }
 }

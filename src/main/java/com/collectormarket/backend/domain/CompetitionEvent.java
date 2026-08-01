@@ -44,4 +44,14 @@ public class CompetitionEvent {
 
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
+
+    /** Creates a new event instance (used by the reference-data loader). The id is generated on insert. */
+    public CompetitionEvent(Short competitionId, String label, String stage,
+            LocalDate startDate, LocalDate endDate) {
+        this.competitionId = competitionId;
+        this.label = label;
+        this.stage = stage;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

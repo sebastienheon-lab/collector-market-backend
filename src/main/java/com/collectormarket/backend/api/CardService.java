@@ -14,10 +14,9 @@ import com.collectormarket.backend.domain.CardRepository;
 /**
  * Card-detail lookups (§8.4) and the shared existence guard used by the other endpoints.
  * <p>
- * JPA pilot: this service reads through {@link CardRepository} (Spring Data) rather than a
- * JdbcTemplate query store - the first slice of the JdbcTemplate-&gt;JPA convention. The rest of the
- * read layer (search, market, prices) still uses JdbcTemplate query stores, and the analytics/
- * ingestion jobs stay on native SQL by design.
+ * Reads through {@link CardRepository} (Spring Data). The whole persistence layer is now JPA -
+ * simple reads/CRUD as JPQL/derived queries, and Postgres-specific analytics/search as native
+ * {@code @Query} on repositories (no JdbcTemplate anywhere).
  */
 @Service
 public class CardService {

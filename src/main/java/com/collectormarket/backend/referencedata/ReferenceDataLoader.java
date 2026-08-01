@@ -2,7 +2,6 @@ package com.collectormarket.backend.referencedata;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -10,14 +9,24 @@ import java.util.Map;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
+
+import com.collectormarket.backend.domain.CompetitionEvent;
+import com.collectormarket.backend.domain.CompetitionEventRepository;
+import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.domain.SportCompetition;
+import com.collectormarket.backend.domain.SportCompetitionRepository;
+import com.collectormarket.backend.domain.SportRepository;
 
 /**
  * Idempotent startup loader for {@code sport_competition} and {@code competition_event} (§7.8-7.9, OQ-15).
  * Kept separate from Flyway migrations — schema and reference data are different concerns, and this data
  * is meant to be edited via PR to seed YAML files under {@code src/main/resources/seeds/} without a migration.
+ * <p>
+ * Competitions have assigned ids, so {@code save} merges by id (upsert). Events have generated ids and
+ * no natural-unique constraint, so they're inserted only when a (competition, label, start_date) row
+ * doesn't already exist.
  */
 @Component
 public class ReferenceDataLoader implements ApplicationRunner {
@@ -25,10 +34,16 @@ public class ReferenceDataLoader implements ApplicationRunner {
     private static final String SPORT_COMPETITIONS_SEED = "seeds/sport_competitions.yml";
     private static final String COMPETITION_EVENTS_SEED = "seeds/competition_events.yml";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final SportRepository sportRepository;
+    private final SportCompetitionRepository sportCompetitionRepository;
+    private final CompetitionEventRepository competitionEventRepository;
 
-    public ReferenceDataLoader(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public ReferenceDataLoader(SportRepository sportRepository,
+            SportCompetitionRepository sportCompetitionRepository,
+            CompetitionEventRepository competitionEventRepository) {
+        this.sportRepository = sportRepository;
+        this.sportCompetitionRepository = sportCompetitionRepository;
+        this.competitionEventRepository = competitionEventRepository;
     }
 
     @Override
@@ -39,41 +54,33 @@ public class ReferenceDataLoader implements ApplicationRunner {
 
     private void loadSportCompetitions() throws IOException {
         for (Map<String, Object> row : loadYaml(SPORT_COMPETITIONS_SEED)) {
-            jdbcTemplate.update("""
-                INSERT INTO sport_competition (id, sport_id, name, is_active)
-                VALUES (?, (SELECT id FROM sport WHERE code = ?), ?, ?)
-                ON CONFLICT (id) DO UPDATE SET
-                    sport_id  = EXCLUDED.sport_id,
-                    name      = EXCLUDED.name,
-                    is_active = EXCLUDED.is_active
-                """,
-                row.get("id"), row.get("sportCode"), row.get("name"), row.get("active"));
+            String sportCode = (String) row.get("sportCode");
+            Short sportId = sportRepository.findByCode(sportCode)
+                    .map(Sport::getId)
+                    .orElseThrow(() -> new IllegalStateException("Unknown sport code in seed: " + sportCode));
+
+            sportCompetitionRepository.save(new SportCompetition(
+                    ((Integer) row.get("id")).shortValue(),
+                    sportId,
+                    (String) row.get("name"),
+                    Boolean.TRUE.equals(row.get("active"))));
         }
     }
 
     private void loadCompetitionEvents() throws IOException {
         for (Map<String, Object> row : loadYaml(COMPETITION_EVENTS_SEED)) {
-            Integer competitionId = (Integer) row.get("competitionId");
+            Short competitionId = ((Integer) row.get("competitionId")).shortValue();
             String label = (String) row.get("label");
-            Date startDate = Date.valueOf(LocalDate.parse((String) row.get("startDate")));
+            LocalDate startDate = LocalDate.parse((String) row.get("startDate"));
 
-            Boolean alreadyLoaded = jdbcTemplate.queryForObject("""
-                SELECT EXISTS (
-                    SELECT 1 FROM competition_event
-                    WHERE competition_id = ? AND label = ? AND start_date = ?
-                )
-                """, Boolean.class, competitionId, label, startDate);
-
-            if (Boolean.TRUE.equals(alreadyLoaded)) {
+            if (competitionEventRepository
+                    .existsByCompetitionIdAndLabelAndStartDate(competitionId, label, startDate)) {
                 continue;
             }
 
-            Date endDate = Date.valueOf(LocalDate.parse((String) row.get("endDate")));
-            jdbcTemplate.update("""
-                INSERT INTO competition_event (competition_id, label, stage, start_date, end_date)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                competitionId, label, row.get("stage"), startDate, endDate);
+            competitionEventRepository.save(new CompetitionEvent(
+                    competitionId, label, (String) row.get("stage"),
+                    startDate, LocalDate.parse((String) row.get("endDate"))));
         }
     }
 
