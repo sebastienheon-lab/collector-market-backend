@@ -5,22 +5,35 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.collectormarket.backend.domain.Card;
+import com.collectormarket.backend.domain.CardRepository;
+import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.domain.CardTrackingRepository;
+import com.collectormarket.backend.domain.ListingObservation;
+import com.collectormarket.backend.domain.ListingObservationRepository;
+import com.collectormarket.backend.domain.MarketMetricDaily;
+import com.collectormarket.backend.domain.MarketMetricDailyId;
+import com.collectormarket.backend.domain.MarketMetricDailyRepository;
+import com.collectormarket.backend.domain.PriceSnapshot;
+import com.collectormarket.backend.domain.PriceSnapshotRepository;
+import com.collectormarket.backend.domain.Sport;
+import com.collectormarket.backend.domain.SportRepository;
 import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.ebay.dto.ItemDetail;
 import com.collectormarket.backend.ebay.dto.ItemSearchResult;
@@ -37,6 +50,9 @@ import reactor.core.publisher.Mono;
  * The full app context boots here, which means CardSeedLoader/CardTracker seed-track all ~159
  * catalog cards. Those are deleted right after startup so this test controls exactly one card
  * and one listing, keeping the eBay mock simple and avoiding 159x network-shaped mock calls.
+ * <p>
+ * Not {@code @Transactional}: the pipeline commits through its own repositories, so fixtures/reads
+ * use plain {@code save}/finders (committed data, no flush games).
  */
 @Testcontainers
 @SpringBootTest
@@ -62,13 +78,28 @@ class IngestionPipelineIntegrationTest {
     private RetentionProperties retentionProperties;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private CardRepository cardRepository;
+
+    @Autowired
+    private SportRepository sportRepository;
+
+    @Autowired
+    private CardTrackingRepository cardTrackingRepository;
+
+    @Autowired
+    private ListingObservationRepository listingObservationRepository;
+
+    @Autowired
+    private PriceSnapshotRepository priceSnapshotRepository;
+
+    @Autowired
+    private MarketMetricDailyRepository marketMetricDailyRepository;
 
     private static final String ITEM_ID = "e2e-item-1";
 
     @Test
     void pollObservationAggregateRetention() {
-        jdbcTemplate.update("DELETE FROM card_tracking"); // isolate from the ~159 auto-seeded cards
+        cardTrackingRepository.deleteAllInBatch(); // isolate from the ~159 auto-seeded cards
         UUID cardId = insertTrackedTestCard();
 
         when(ebayBrowseClient.searchItems(anyString(), anyString()))
@@ -80,71 +111,68 @@ class IngestionPipelineIntegrationTest {
         // --- Day 1 poll: first-ever observation, no prior to compare against -> no inferred sale.
         poller.pollDueCards();
 
-        List<Map<String, Object>> observationsAfterDay1 = jdbcTemplate.queryForList(
-                "SELECT * FROM listing_observation WHERE external_listing_id = ?", ITEM_ID);
+        List<ListingObservation> observationsAfterDay1 = listingObservationRepository.findByExternalListingId(ITEM_ID);
         assertThat(observationsAfterDay1).hasSize(1);
-        assertThat(observationsAfterDay1.get(0).get("quantity_sold")).isEqualTo(2);
-        assertThat(priceSnapshotCount()).isZero();
+        assertThat(observationsAfterDay1.get(0).getQuantitySold()).isEqualTo(2);
+        assertThat(inferredSaleCount()).isZero();
 
         // simulate "the next day is due" without waiting a real 24h cadence
-        jdbcTemplate.update("UPDATE card_tracking SET last_polled_at = NULL WHERE card_id = ?", cardId);
+        CardTracking tracking = cardTrackingRepository.findById(cardId).orElseThrow();
+        tracking.setLastPolledAt(null);
+        cardTrackingRepository.save(tracking);
 
         // --- Day 2 poll: quantity_sold 2 -> 5, a delta of 3 -> 3 inferred-sale rows.
         poller.pollDueCards();
 
-        List<Map<String, Object>> observationsAfterDay2 = jdbcTemplate.queryForList(
-                "SELECT * FROM listing_observation WHERE external_listing_id = ? ORDER BY observed_at", ITEM_ID);
-        assertThat(observationsAfterDay2).hasSize(2);
-        assertThat(priceSnapshotCount()).isEqualTo(3);
-
-        List<Map<String, Object>> inferredSales = jdbcTemplate.queryForList(
-                "SELECT * FROM price_snapshot WHERE card_id = ? AND price_type = 'INFERRED_SALE'", cardId);
-        assertThat(inferredSales).allSatisfy(row ->
-                assertThat(((BigDecimal) row.get("sale_price"))).isEqualByComparingTo("25.00"));
+        assertThat(listingObservationRepository.findByExternalListingId(ITEM_ID)).hasSize(2);
+        assertThat(inferredSaleCount()).isEqualTo(3);
+        assertThat(priceSnapshotRepository.findByCardId(cardId)).allSatisfy(row ->
+                assertThat(row.getSalePrice()).isEqualByComparingTo("25.00"));
 
         // --- Aggregate today: one market_metric_daily row, floor/active reflect the one listing.
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         dailyAggregator.aggregate(today);
 
-        Map<String, Object> metricRow = jdbcTemplate.queryForMap(
-                "SELECT * FROM market_metric_daily WHERE card_id = ? AND metric_date = ?", cardId, today);
-        assertThat(metricRow.get("floor_price")).isEqualTo(new BigDecimal("25.00"));
-        assertThat(metricRow.get("active_listings")).isEqualTo(1);
+        MarketMetricDaily metricRow = marketMetricDailyRepository
+                .findById(new MarketMetricDailyId(cardId, "RAW", "RAW", today)).orElseThrow();
+        assertThat(metricRow.getFloorPrice()).isEqualByComparingTo("25.00");
+        assertThat(metricRow.getActiveListings()).isEqualTo(1);
 
-        // --- Retention: backdate both observations and the inferred-sale linkback fields past
-        // their windows, then confirm the job actually prunes them. Shifted relatively (not set
-        // to one absolute value) so the two observation rows don't collide on their
-        // (external_listing_id, observed_at) unique constraint.
-        jdbcTemplate.update(
-                "UPDATE listing_observation SET observed_at = observed_at - make_interval(days => ?) "
-                        + "WHERE external_listing_id = ?",
-                retentionProperties.listingObservationDays() + 1, ITEM_ID);
-        jdbcTemplate.update(
-                "UPDATE price_snapshot SET sold_at = sold_at - make_interval(days => ?) WHERE card_id = ?",
-                retentionProperties.priceSnapshotLinkbackDays() + 1, cardId);
+        // --- Retention: backdate both observations and the inferred-sale linkback fields past their
+        // windows, then confirm the job prunes them. Shifted relatively (same delta on every row) so
+        // the two observation rows don't collide on their (external_listing_id, observed_at) unique key.
+        backdateObservations(ITEM_ID, retentionProperties.listingObservationDays() + 1);
+        backdateSnapshots(cardId, retentionProperties.priceSnapshotLinkbackDays() + 1);
 
         retentionJob.run();
 
-        Integer remainingObservations = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM listing_observation WHERE external_listing_id = ?", Integer.class, ITEM_ID);
-        assertThat(remainingObservations).isZero();
+        assertThat(listingObservationRepository.findByExternalListingId(ITEM_ID)).isEmpty();
 
-        List<Map<String, Object>> snapshotsAfterRetention = jdbcTemplate.queryForList(
-                "SELECT * FROM price_snapshot WHERE card_id = ?", cardId);
+        List<PriceSnapshot> snapshotsAfterRetention = priceSnapshotRepository.findByCardId(cardId);
         assertThat(snapshotsAfterRetention).hasSize(3);
         assertThat(snapshotsAfterRetention).allSatisfy(row -> {
-            assertThat(row.get("external_id")).isNull();
-            assertThat(row.get("raw_title")).isNull();
-            assertThat(row.get("external_url")).isNull();
+            assertThat(row.getExternalId()).isNull();
+            assertThat(row.getRawTitle()).isNull();
+            assertThat(row.getExternalUrl()).isNull();
             // permanent tuple survives retention
-            assertThat(row.get("sale_price")).isNotNull();
+            assertThat(row.getSalePrice()).isNotNull();
         });
     }
 
-    private int priceSnapshotCount() {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM price_snapshot WHERE external_id LIKE ?", Integer.class, ITEM_ID + "%");
-        return count != null ? count : 0;
+    private int inferredSaleCount() {
+        return priceSnapshotRepository.findByExternalIdStartingWith(ITEM_ID).size();
+    }
+
+    private void backdateObservations(String listingId, int days) {
+        List<ListingObservation> rows = listingObservationRepository.findByExternalListingId(listingId);
+        rows.forEach(o -> o.setObservedAt(o.getObservedAt().minus(days, ChronoUnit.DAYS)));
+        listingObservationRepository.saveAll(rows);
+    }
+
+    private void backdateSnapshots(UUID cardId, int days) {
+        List<PriceSnapshot> rows = priceSnapshotRepository.findByCardId(cardId);
+        rows.forEach(s -> s.setSoldAt(s.getSoldAt().minus(days, ChronoUnit.DAYS)));
+        priceSnapshotRepository.saveAll(rows);
     }
 
     private ItemSearchResult searchResultWithOneFixedPriceItem() {
@@ -162,16 +190,12 @@ class IngestionPipelineIntegrationTest {
     }
 
     private UUID insertTrackedTestCard() {
-        UUID cardId = jdbcTemplate.queryForObject("""
-                INSERT INTO card (player_name, year, brand, set_name, sport_id, is_rookie)
-                VALUES ('E2E Test Player', 2023, 'Test Brand', 'Test Set',
-                        (SELECT id FROM sport WHERE code = 'baseball'), true)
-                RETURNING id
-                """, UUID.class);
-        jdbcTemplate.update("""
-                INSERT INTO card_tracking (card_id, tier, poll_cadence, last_engagement_at)
-                VALUES (?, 'SEED', 'DAILY', now())
-                """, cardId);
-        return cardId;
+        Sport baseball = sportRepository.findByCode("baseball").orElseThrow();
+        Card card = cardRepository.save(new Card(
+                "E2E Test Player", (short) 2023, "Test Brand", "Test Set", null, baseball, true));
+
+        CardTracking tracking = new CardTracking(card.getId(), "SEED", "DAILY", Instant.now());
+        cardTrackingRepository.save(tracking);
+        return card.getId();
     }
 }

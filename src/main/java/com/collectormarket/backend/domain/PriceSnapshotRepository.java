@@ -16,12 +16,14 @@ public interface PriceSnapshotRepository extends JpaRepository<PriceSnapshot, UU
     /** Snapshots whose external_id starts with the given prefix (inferred-sale synthetic ids). */
     List<PriceSnapshot> findByExternalIdStartingWith(String externalIdPrefix);
 
+    List<PriceSnapshot> findByCardId(UUID cardId);
+
     /**
      * §5.4 retention: drop the raw-listing linkback fields on snapshots older than the cutoff,
      * touching only rows that still carry any linkback. Returns the row count.
      */
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE PriceSnapshot ps
             SET ps.externalUrl = NULL, ps.rawTitle = NULL, ps.externalId = NULL

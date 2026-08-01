@@ -2,6 +2,7 @@ package com.collectormarket.backend.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +17,8 @@ public interface ListingObservationRepository extends JpaRepository<ListingObser
 
     /** Latest observation of a given eBay listing - the prior row for inferred-sale detection. */
     Optional<ListingObservation> findFirstByExternalListingIdOrderByObservedAtDesc(String externalListingId);
+
+    List<ListingObservation> findByExternalListingId(String externalListingId);
 
     /**
      * Idempotent insert: the {@code ON CONFLICT (external_listing_id, observed_at) DO NOTHING}

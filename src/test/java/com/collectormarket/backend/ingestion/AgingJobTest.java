@@ -2,21 +2,16 @@ package com.collectormarket.backend.ingestion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@Transactional
-class AgingJobTest {
+import com.collectormarket.backend.domain.CardTracking;
+
+class AgingJobTest extends IngestionJpaTestBase {
 
     // Matches app_setting's seeded defaults (V009): decay_after_days=14, pause_after_days=60.
     private static final int DECAY_AFTER_DAYS = 14;
@@ -25,18 +20,15 @@ class AgingJobTest {
     @Autowired
     private AgingJob agingJob;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
     void searchedCardPastDecayThreshold_becomesDecayedWithWeeklyCadence() {
         UUID cardId = insertTracked(CardTier.SEARCHED, PollCadence.DAILY, DECAY_AFTER_DAYS + 5);
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("DECAYED");
-        assertThat(row.get("poll_cadence")).isEqualTo("WEEKLY");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("DECAYED");
+        assertThat(row.getPollCadence()).isEqualTo("WEEKLY");
     }
 
     @Test
@@ -45,9 +37,9 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("SEARCHED");
-        assertThat(row.get("poll_cadence")).isEqualTo("DAILY");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("SEARCHED");
+        assertThat(row.getPollCadence()).isEqualTo("DAILY");
     }
 
     @Test
@@ -56,9 +48,9 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("DECAYED");
-        assertThat(row.get("poll_cadence")).isEqualTo("PAUSED");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("DECAYED");
+        assertThat(row.getPollCadence()).isEqualTo("PAUSED");
     }
 
     @Test
@@ -67,9 +59,9 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("DECAYED");
-        assertThat(row.get("poll_cadence")).isEqualTo("WEEKLY");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("DECAYED");
+        assertThat(row.getPollCadence()).isEqualTo("WEEKLY");
     }
 
     @Test
@@ -78,9 +70,9 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("DECAYED");
-        assertThat(row.get("poll_cadence")).isEqualTo("PAUSED");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("DECAYED");
+        assertThat(row.getPollCadence()).isEqualTo("PAUSED");
     }
 
     @Test
@@ -89,9 +81,9 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("SEED");
-        assertThat(row.get("poll_cadence")).isEqualTo("DAILY");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("SEED");
+        assertThat(row.getPollCadence()).isEqualTo("DAILY");
     }
 
     @Test
@@ -100,30 +92,17 @@ class AgingJobTest {
 
         agingJob.run();
 
-        Map<String, Object> row = trackingRow(cardId);
-        assertThat(row.get("tier")).isEqualTo("WATCHLISTED");
-        assertThat(row.get("poll_cadence")).isEqualTo("DAILY");
+        CardTracking row = tracking(cardId);
+        assertThat(row.getTier()).isEqualTo("WATCHLISTED");
+        assertThat(row.getPollCadence()).isEqualTo("DAILY");
     }
 
-    private Map<String, Object> trackingRow(UUID cardId) {
-        return jdbcTemplate.queryForMap("SELECT * FROM card_tracking WHERE card_id = ?", cardId);
+    private CardTracking tracking(UUID cardId) {
+        return cardTrackingRepository.findById(cardId).orElseThrow();
     }
 
     private UUID insertTracked(CardTier tier, PollCadence cadence, int lastEngagementDaysAgo) {
-        UUID cardId = insertTestCard();
-        Timestamp lastEngagementAt = Timestamp.from(Instant.now().minus(lastEngagementDaysAgo, ChronoUnit.DAYS));
-        jdbcTemplate.update("""
-                INSERT INTO card_tracking (card_id, tier, poll_cadence, last_engagement_at)
-                VALUES (?, ?, ?, ?)
-                """, cardId, tier.name(), cadence.name(), lastEngagementAt);
-        return cardId;
-    }
-
-    private UUID insertTestCard() {
-        return jdbcTemplate.queryForObject("""
-                INSERT INTO card (player_name, year, brand, set_name, sport_id, is_rookie)
-                VALUES (?, 2023, 'Test Brand', 'Test Set', (SELECT id FROM sport WHERE code = 'baseball'), true)
-                RETURNING id
-                """, UUID.class, "Test Player " + UUID.randomUUID());
+        return saveTracking(saveTestCard(), tier, cadence, null,
+                Instant.now().minus(lastEngagementDaysAgo, ChronoUnit.DAYS));
     }
 }

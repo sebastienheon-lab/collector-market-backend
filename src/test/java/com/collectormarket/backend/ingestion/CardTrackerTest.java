@@ -2,7 +2,6 @@ package com.collectormarket.backend.ingestion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -10,32 +9,19 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.collectormarket.backend.domain.CardTracking;
-import com.collectormarket.backend.domain.CardTrackingRepository;
 
-@SpringBootTest
-@Transactional
-class CardTrackerTest {
+class CardTrackerTest extends IngestionJpaTestBase {
 
     private static final int DAILY_HOURS = 24;
 
     @Autowired
     private CardTracker cardTracker;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private CardTrackingRepository cardTrackingRepository;
-
     @Test
     void selectDueForPoll_includesNeverPolledCards() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEED, PollCadence.DAILY, null);
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEED, PollCadence.DAILY, null, null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -44,8 +30,8 @@ class CardTrackerTest {
 
     @Test
     void selectDueForPoll_excludesRecentlyPolledDailyCard() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEED, PollCadence.DAILY, Instant.now().minus(1, ChronoUnit.HOURS));
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEED, PollCadence.DAILY,
+                Instant.now().minus(1, ChronoUnit.HOURS), null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -54,8 +40,8 @@ class CardTrackerTest {
 
     @Test
     void selectDueForPoll_includesDailyCardPolledMoreThanCadenceHoursAgo() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEED, PollCadence.DAILY, Instant.now().minus(25, ChronoUnit.HOURS));
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEED, PollCadence.DAILY,
+                Instant.now().minus(25, ChronoUnit.HOURS), null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -64,8 +50,8 @@ class CardTrackerTest {
 
     @Test
     void selectDueForPoll_weeklyCardNotDueAfterTwoDays() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.DECAYED, PollCadence.WEEKLY, Instant.now().minus(2, ChronoUnit.DAYS));
+        UUID cardId = saveTracking(saveTestCard(), CardTier.DECAYED, PollCadence.WEEKLY,
+                Instant.now().minus(2, ChronoUnit.DAYS), null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -74,8 +60,8 @@ class CardTrackerTest {
 
     @Test
     void selectDueForPoll_weeklyCardDueAfterEightDays() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.DECAYED, PollCadence.WEEKLY, Instant.now().minus(8, ChronoUnit.DAYS));
+        UUID cardId = saveTracking(saveTestCard(), CardTier.DECAYED, PollCadence.WEEKLY,
+                Instant.now().minus(8, ChronoUnit.DAYS), null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -84,8 +70,7 @@ class CardTrackerTest {
 
     @Test
     void selectDueForPoll_neverIncludesPausedCards() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.DECAYED, PollCadence.PAUSED, null);
+        UUID cardId = saveTracking(saveTestCard(), CardTier.DECAYED, PollCadence.PAUSED, null, null);
 
         List<TrackedCard> due = cardTracker.selectDueForPoll(DAILY_HOURS);
 
@@ -94,102 +79,61 @@ class CardTrackerTest {
 
     @Test
     void recordPolled_updatesLastPolledAt() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEED, PollCadence.DAILY, null);
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEED, PollCadence.DAILY, null, null);
 
         cardTracker.recordPolled(cardId);
 
-        Instant lastPolledAt = jdbcTemplate.queryForObject(
-                "SELECT last_polled_at FROM card_tracking WHERE card_id = ?", Instant.class, cardId);
+        Instant lastPolledAt = cardTrackingRepository.findById(cardId).orElseThrow().getLastPolledAt();
         assertThat(lastPolledAt).isNotNull().isAfter(Instant.now().minusSeconds(10));
     }
 
     @Test
     void recordEngagement_updatesExistingRow() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEARCHED, PollCadence.DAILY, null, Instant.now().minus(30, ChronoUnit.DAYS));
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEARCHED, PollCadence.DAILY, null,
+                Instant.now().minus(30, ChronoUnit.DAYS));
 
         cardTracker.recordEngagement(cardId);
 
-        Instant lastEngagementAt = jdbcTemplate.queryForObject(
-                "SELECT last_engagement_at FROM card_tracking WHERE card_id = ?", Instant.class, cardId);
+        Instant lastEngagementAt = cardTrackingRepository.findById(cardId).orElseThrow().getLastEngagementAt();
         assertThat(lastEngagementAt).isAfter(Instant.now().minusSeconds(10));
     }
 
     @Test
     void recordEngagement_isNoOpForUntrackedCard() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
 
         cardTracker.recordEngagement(cardId);
 
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM card_tracking WHERE card_id = ?", Integer.class, cardId);
-        assertThat(count).isZero();
+        assertThat(cardTrackingRepository.existsById(cardId)).isFalse();
     }
 
     @Test
     void upsertWatchlisted_insertsWhenNotTracked() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
 
         cardTracker.upsertWatchlisted(cardId);
 
-        // Insert path writes via JPA save(); read via the repository so it's visible in-session
-        // (raw SQL on the same connection wouldn't see the unflushed insert).
         CardTracking tracking = cardTrackingRepository.findById(cardId).orElseThrow();
         assertThat(tracking.getTier()).isEqualTo("WATCHLISTED");
     }
 
     @Test
     void upsertWatchlisted_keepsSeedTier() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.SEED, PollCadence.DAILY, null);
+        UUID cardId = saveTracking(saveTestCard(), CardTier.SEED, PollCadence.DAILY, null, null);
 
         cardTracker.upsertWatchlisted(cardId);
 
-        String tier = jdbcTemplate.queryForObject(
-                "SELECT tier FROM card_tracking WHERE card_id = ?", String.class, cardId);
-        assertThat(tier).isEqualTo("SEED");
+        assertThat(cardTrackingRepository.findById(cardId).orElseThrow().getTier()).isEqualTo("SEED");
     }
 
     @Test
     void upsertWatchlisted_promotesDecayedToWatchlistedAndUnpausesCadence() {
-        UUID cardId = insertTestCard();
-        insertTracking(cardId, CardTier.DECAYED, PollCadence.PAUSED, null);
+        UUID cardId = saveTracking(saveTestCard(), CardTier.DECAYED, PollCadence.PAUSED, null, null);
 
         cardTracker.upsertWatchlisted(cardId);
 
-        String tier = jdbcTemplate.queryForObject(
-                "SELECT tier FROM card_tracking WHERE card_id = ?", String.class, cardId);
-        String cadence = jdbcTemplate.queryForObject(
-                "SELECT poll_cadence FROM card_tracking WHERE card_id = ?", String.class, cardId);
-        assertThat(tier).isEqualTo("WATCHLISTED");
-        assertThat(cadence).isEqualTo("DAILY");
-    }
-
-    private UUID insertTestCard() {
-        return jdbcTemplate.queryForObject("""
-                INSERT INTO card (player_name, year, brand, set_name, sport_id, is_rookie)
-                VALUES (?, 2023, 'Test Brand', 'Test Set', (SELECT id FROM sport WHERE code = 'baseball'), true)
-                RETURNING id
-                """, UUID.class, "Test Player " + UUID.randomUUID());
-    }
-
-    private void insertTracking(UUID cardId, CardTier tier, PollCadence cadence, Instant lastPolledAt) {
-        insertTracking(cardId, tier, cadence, lastPolledAt, Instant.now());
-    }
-
-    private void insertTracking(
-            UUID cardId, CardTier tier, PollCadence cadence, Instant lastPolledAt, Instant lastEngagementAt) {
-        // pgjdbc's setObject() can't infer a SQL type for a bare java.time.Instant - needs
-        // java.sql.Timestamp (production code never hits this since writes use now() SQL-side).
-        jdbcTemplate.update("""
-                INSERT INTO card_tracking (card_id, tier, poll_cadence, last_polled_at, last_engagement_at)
-                VALUES (?, ?, ?, ?, ?)
-                """, cardId, tier.name(), cadence.name(),
-                toTimestamp(lastPolledAt), toTimestamp(lastEngagementAt));
-    }
-
-    private Timestamp toTimestamp(Instant instant) {
-        return instant != null ? Timestamp.from(instant) : null;
+        CardTracking tracking = cardTrackingRepository.findById(cardId).orElseThrow();
+        assertThat(tracking.getTier()).isEqualTo("WATCHLISTED");
+        assertThat(tracking.getPollCadence()).isEqualTo("DAILY");
     }
 }

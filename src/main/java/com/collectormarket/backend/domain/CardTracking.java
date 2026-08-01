@@ -22,7 +22,7 @@ import lombok.Setter;
 @Table(name = "card_tracking")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class CardTracking {
 
     @Id

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 public interface MarketMetricDailyRepository
         extends JpaRepository<MarketMetricDaily, MarketMetricDailyId> {
 
+    long countByCardIdAndMetricDate(java.util.UUID cardId, java.time.LocalDate metricDate);
+
     /**
      * §7.11: compute one row per (card, grade) for {@code metricDate} from that day's
      * {@code listing_observation} rows (floor = MIN ask, median = {@code percentile_cont}, counts of

@@ -25,7 +25,7 @@ import lombok.Setter;
 @IdClass(MarketMetricDailyId.class)
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class MarketMetricDaily {
 
     @Id

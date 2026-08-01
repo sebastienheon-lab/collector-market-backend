@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.collectormarket.backend.api.dto.EventBand;
+import com.collectormarket.backend.domain.CompetitionEvent;
+import com.collectormarket.backend.domain.CompetitionEventRepository;
 
 /**
  * Verifies event bands are read and projected onto the {@link EventBand} record from a native
@@ -20,15 +22,16 @@ class EventQueryStoreIntegrationTest extends ApiIntegrationTestBase {
     @Autowired
     private EventQueryStore eventQueryStore;
 
+    @Autowired
+    private CompetitionEventRepository competitionEventRepository;
+
     @Test
     void eventsForCard_projectsBaseballCompetitionEventOntoEventBand() {
         UUID cardId = insertCard("Event Player " + UUID.randomUUID(), 2024, "Topps", "Chrome", "1");
         String label = "Test Postseason " + UUID.randomUUID();
         // competition 1 = 'MLB Postseason' (baseball), seeded in V005; add an in-window instance.
-        jdbcTemplate.update("""
-                INSERT INTO competition_event (competition_id, label, stage, start_date, end_date)
-                VALUES (1, ?, 'Finals', ?, ?)
-                """, label, LocalDate.now().minusDays(5), LocalDate.now().plusDays(5));
+        competitionEventRepository.save(new CompetitionEvent(
+                (short) 1, label, "Finals", LocalDate.now().minusDays(5), LocalDate.now().plusDays(5)));
 
         List<EventBand> bands = eventQueryStore.eventsForCard(cardId, 90);
 

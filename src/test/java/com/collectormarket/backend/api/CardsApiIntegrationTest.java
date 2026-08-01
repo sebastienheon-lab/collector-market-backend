@@ -5,17 +5,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.collectormarket.backend.domain.CardTracking;
+import com.collectormarket.backend.domain.CardTrackingRepository;
 import com.jayway.jsonpath.JsonPath;
 
 /** Endpoint happy paths, RFC 7807 error mappings, and the M5 engagement touch on the prices route. */
 class CardsApiIntegrationTest extends ApiIntegrationTestBase {
+
+    @Autowired
+    private CardTrackingRepository cardTrackingRepository;
 
     @Test
     void search_findsCardByPlayerName() throws Exception {
@@ -98,18 +103,13 @@ class CardsApiIntegrationTest extends ApiIntegrationTestBase {
     void prices_touchesLastEngagementAt() throws Exception {
         UUID id = insertCard("Engagement Player " + UUID.randomUUID(), 2024, "Topps", "Chrome", "1");
         // A tracked card whose engagement is stale; the prices endpoint should bump it (M5 decision).
-        Instant tenDaysAgo = daysAgo(10);
-        jdbcTemplate.update("""
-                INSERT INTO card_tracking (card_id, tier, poll_cadence, last_engagement_at)
-                VALUES (?, 'SEED', 'DAILY', ?)
-                """, id, Timestamp.from(tenDaysAgo));
+        cardTrackingRepository.save(new CardTracking(id, "SEED", "DAILY", daysAgo(10)));
 
         mockMvc.perform(get("/api/v1/cards/{id}/prices", id).param("grade", "ALL").param("days", "90"))
                 .andExpect(status().isOk());
 
-        Timestamp engagement = jdbcTemplate.queryForObject(
-                "SELECT last_engagement_at FROM card_tracking WHERE card_id = ?", Timestamp.class, id);
-        assertThat(engagement.toInstant()).isAfter(daysAgo(1));
+        Instant engagement = cardTrackingRepository.findById(id).orElseThrow().getLastEngagementAt();
+        assertThat(engagement).isAfter(daysAgo(1));
     }
 
     // --- Search: sport filter + pagination -----------------------------------------------------

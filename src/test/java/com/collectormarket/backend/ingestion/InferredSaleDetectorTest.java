@@ -3,7 +3,6 @@ package com.collectormarket.backend.ingestion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -11,31 +10,19 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.collectormarket.backend.domain.PriceSnapshot;
-import com.collectormarket.backend.domain.PriceSnapshotRepository;
 
-@SpringBootTest
-@Transactional
-class InferredSaleDetectorTest {
+class InferredSaleDetectorTest extends IngestionJpaTestBase {
 
     @Autowired
     private InferredSaleDetector detector;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private PriceSnapshotRepository priceSnapshotRepository;
-
     @Test
     void quantityIncreaseWritesOneInferredSalePerUnit() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
-        insertPriorObservation(cardId, listingId, 2);
+        savePriorObservation(cardId, listingId, 2);
 
         detector.detect(observation(cardId, listingId, "FIXED_PRICE", 5));
 
@@ -52,7 +39,7 @@ class InferredSaleDetectorTest {
 
     @Test
     void noPriorObservation_writesNothing() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
 
         detector.detect(observation(cardId, listingId, "FIXED_PRICE", 1));
@@ -62,9 +49,9 @@ class InferredSaleDetectorTest {
 
     @Test
     void unchangedQuantity_writesNothing() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
-        insertPriorObservation(cardId, listingId, 3);
+        savePriorObservation(cardId, listingId, 3);
 
         detector.detect(observation(cardId, listingId, "FIXED_PRICE", 3));
 
@@ -73,9 +60,9 @@ class InferredSaleDetectorTest {
 
     @Test
     void decreasedQuantity_isIgnored() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
-        insertPriorObservation(cardId, listingId, 5);
+        savePriorObservation(cardId, listingId, 5);
 
         detector.detect(observation(cardId, listingId, "FIXED_PRICE", 2));
 
@@ -84,9 +71,9 @@ class InferredSaleDetectorTest {
 
     @Test
     void auctionListings_areNeverInferred() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
-        insertPriorObservation(cardId, listingId, 0);
+        savePriorObservation(cardId, listingId, 0);
 
         detector.detect(observation(cardId, listingId, "AUCTION", 5));
 
@@ -95,9 +82,9 @@ class InferredSaleDetectorTest {
 
     @Test
     void nullQuantitySold_writesNothing() {
-        UUID cardId = insertTestCard();
+        UUID cardId = saveTestCard();
         String listingId = "listing-" + UUID.randomUUID();
-        insertPriorObservation(cardId, listingId, 1);
+        savePriorObservation(cardId, listingId, 1);
 
         detector.detect(new ObservationInput(
                 cardId, listingId, Instant.now(), new BigDecimal("25.00"), "FIXED_PRICE", null,
@@ -112,27 +99,14 @@ class InferredSaleDetectorTest {
                 "RAW", "RAW", "https://ebay.com/itm/" + listingId, "Test Listing");
     }
 
-    private void insertPriorObservation(UUID cardId, String listingId, int quantitySold) {
-        jdbcTemplate.update("""
-                INSERT INTO listing_observation
-                    (card_id, external_listing_id, observed_at, ask_price, listing_format, quantity_sold)
-                VALUES (?, ?, ?, ?, 'FIXED_PRICE', ?)
-                """,
-                cardId, listingId, Timestamp.from(Instant.now().minus(1, ChronoUnit.DAYS)),
-                new BigDecimal("25.00"), quantitySold);
+    private void savePriorObservation(UUID cardId, String listingId, int quantitySold) {
+        saveObservation(cardId, listingId, Instant.now().minus(1, ChronoUnit.DAYS),
+                new BigDecimal("25.00"), "RAW", "RAW", quantitySold);
     }
 
     // Read via the repository, not raw SQL: a derived-query read auto-flushes the pending JPA
     // inserts first, so they're visible inside this @Transactional test's session.
     private List<PriceSnapshot> priceSnapshotRows(String listingIdPrefix) {
         return priceSnapshotRepository.findByExternalIdStartingWith(listingIdPrefix);
-    }
-
-    private UUID insertTestCard() {
-        return jdbcTemplate.queryForObject("""
-                INSERT INTO card (player_name, year, brand, set_name, sport_id, is_rookie)
-                VALUES (?, 2023, 'Test Brand', 'Test Set', (SELECT id FROM sport WHERE code = 'baseball'), true)
-                RETURNING id
-                """, UUID.class, "Test Player " + UUID.randomUUID());
     }
 }

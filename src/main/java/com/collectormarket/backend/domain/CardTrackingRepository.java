@@ -45,18 +45,18 @@ public interface CardTrackingRepository extends JpaRepository<CardTracking, UUID
             @Param("dailyCutoff") Instant dailyCutoff, @Param("weeklyCutoff") Instant weeklyCutoff);
 
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE CardTracking ct SET ct.lastPolledAt = CURRENT_TIMESTAMP WHERE ct.cardId = :cardId")
     int recordPolled(@Param("cardId") UUID cardId);
 
     /** No-op (0 rows) if the card isn't tracked - search/browsing alone never creates a row. */
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE CardTracking ct SET ct.lastEngagementAt = CURRENT_TIMESTAMP WHERE ct.cardId = :cardId")
     int recordEngagement(@Param("cardId") UUID cardId);
 
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE CardTracking ct SET ct.tier = 'DECAYED', ct.pollCadence = 'WEEKLY'
             WHERE ct.tier = 'SEARCHED' AND ct.lastEngagementAt < :cutoff
@@ -64,7 +64,7 @@ public interface CardTrackingRepository extends JpaRepository<CardTracking, UUID
     int decaySearchedCards(@Param("cutoff") Instant cutoff);
 
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE CardTracking ct SET ct.pollCadence = 'PAUSED'
             WHERE ct.tier = 'DECAYED' AND ct.pollCadence <> 'PAUSED' AND ct.lastEngagementAt < :cutoff
@@ -73,7 +73,7 @@ public interface CardTrackingRepository extends JpaRepository<CardTracking, UUID
 
     /** §7.10 watchlist upsert (update half): keep SEED, otherwise promote to WATCHLISTED/DAILY. */
     @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE CardTracking ct
             SET ct.tier = CASE WHEN ct.tier = 'SEED' THEN ct.tier ELSE 'WATCHLISTED' END,

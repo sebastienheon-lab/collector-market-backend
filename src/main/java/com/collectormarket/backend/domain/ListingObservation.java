@@ -24,7 +24,7 @@ import lombok.Setter;
 @Table(name = "listing_observation")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class ListingObservation {
 
     @Id
