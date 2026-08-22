@@ -14,5 +14,6 @@ public record EbayItemDetailRaw(
         String itemWebUrl,
         EbaySeller seller,
         List<String> buyingOptions,
-        List<EbayEstimatedAvailabilityRaw> estimatedAvailabilities) {
+        List<EbayEstimatedAvailabilityRaw> estimatedAvailabilities,
+        EbayImage image) {
 }

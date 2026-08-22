@@ -12,5 +12,6 @@ public record ItemDetail(
         String sellerUsername,
         ListingFormat listingFormat,
         Integer estimatedAvailableQuantity,
-        Integer estimatedSoldQuantity) {
+        Integer estimatedSoldQuantity,
+        String imageUrl) {
 }

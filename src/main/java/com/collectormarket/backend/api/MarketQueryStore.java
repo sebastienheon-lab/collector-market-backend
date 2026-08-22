@@ -1,13 +1,12 @@
 package com.collectormarket.backend.api;
 
+import com.collectormarket.backend.repositories.ActiveListingRow;
 import com.collectormarket.backend.repositories.MarketRepository;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
-
-import com.collectormarket.backend.dto.ActiveListing;
 
 /**
  * Current market view (§8.3), read from the most recent day of {@code listing_observation} rows for
@@ -25,7 +24,7 @@ public class MarketQueryStore {
     }
 
     /** Live listings for the card+grade on its most recent observation day; empty if never observed. */
-    public List<ActiveListing> currentListings(UUID cardId, Grade grade) {
+    public List<ActiveListingRow> currentListings(UUID cardId, Grade grade) {
         return marketRepository.currentListings(cardId, grade.gradeSource(), grade.gradeValue());
     }
 }

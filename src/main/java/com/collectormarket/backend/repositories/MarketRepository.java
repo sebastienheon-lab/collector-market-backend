@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-import com.collectormarket.backend.dto.ActiveListing;
 import com.collectormarket.backend.entities.ListingObservation;
 
 /**
@@ -20,7 +19,8 @@ public interface MarketRepository extends Repository<ListingObservation, UUID> {
 
     @Query(value = """
             SELECT DISTINCT ON (external_listing_id)
-                   ask_price AS askPrice, listing_format AS listingFormat, external_url AS externalUrl
+                   ask_price AS askPrice, listing_format AS listingFormat, external_url AS externalUrl,
+                   external_listing_id AS externalListingId
             FROM listing_observation
             WHERE card_id = :cardId
               AND (:gradeSource IS NULL OR (grade_source = :gradeSource AND grade_value = :gradeValue))
@@ -31,7 +31,7 @@ public interface MarketRepository extends Repository<ListingObservation, UUID> {
               )
             ORDER BY external_listing_id, observed_at DESC
             """, nativeQuery = true)
-    List<ActiveListing> currentListings(
+    List<ActiveListingRow> currentListings(
             @Param("cardId") UUID cardId,
             @Param("gradeSource") String gradeSource,
             @Param("gradeValue") String gradeValue);

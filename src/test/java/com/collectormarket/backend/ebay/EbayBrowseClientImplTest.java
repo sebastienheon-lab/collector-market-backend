@@ -134,7 +134,8 @@ class EbayBrowseClientImplTest {
                               "estimatedAvailableQuantity": 3,
                               "estimatedSoldQuantity": 12
                             }
-                          ]
+                          ],
+                          "image": { "imageUrl": "https://i.ebayimg.com/images/g/abc/s-l500.jpg" }
                         }
                         """)));
 
@@ -143,6 +144,7 @@ class EbayBrowseClientImplTest {
         assertThat(detail).isNotNull();
         assertThat(detail.estimatedAvailableQuantity()).isEqualTo(3);
         assertThat(detail.estimatedSoldQuantity()).isEqualTo(12);
+        assertThat(detail.imageUrl()).isEqualTo("https://i.ebayimg.com/images/g/abc/s-l500.jpg");
     }
 
     @Test

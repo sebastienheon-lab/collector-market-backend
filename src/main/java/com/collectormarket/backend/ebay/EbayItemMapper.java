@@ -57,7 +57,8 @@ final class EbayItemMapper {
                 raw.seller() != null ? raw.seller().username() : null,
                 toListingFormat(raw.buyingOptions()),
                 availability != null ? availability.estimatedAvailableQuantity() : null,
-                availability != null ? availability.estimatedSoldQuantity() : null);
+                availability != null ? availability.estimatedSoldQuantity() : null,
+                raw.image() != null ? raw.image().imageUrl() : null);
     }
 
     private static BigDecimal parsePrice(EbayPrice price) {

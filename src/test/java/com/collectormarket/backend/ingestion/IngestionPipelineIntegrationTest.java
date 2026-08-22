@@ -188,7 +188,7 @@ class IngestionPipelineIntegrationTest {
         return new ItemDetail(
                 ITEM_ID, "2023 Test Brand E2E Test Player #1", new BigDecimal("25.00"), "USD",
                 "Graded", "https://ebay.com/itm/" + ITEM_ID, "seller1", ListingFormat.FIXED_PRICE,
-                10, estimatedSoldQuantity);
+                10, estimatedSoldQuantity, null);
     }
 
     private UUID insertTrackedTestCard() {

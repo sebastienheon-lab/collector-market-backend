@@ -1,26 +1,38 @@
 package com.collectormarket.backend.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import com.collectormarket.backend.dto.ItemDetail;
+import com.collectormarket.backend.dto.ListingFormat;
+import com.collectormarket.backend.ebay.EbayBrowseClient;
 import com.collectormarket.backend.entities.CardTracking;
 import com.collectormarket.backend.repositories.CardTrackingRepository;
 import com.jayway.jsonpath.JsonPath;
+
+import reactor.core.publisher.Mono;
 
 /** Endpoint happy paths, RFC 7807 error mappings, and the M5 engagement touch on the prices route. */
 class CardsApiIntegrationTest extends ApiIntegrationTestBase {
 
     @Autowired
     private CardTrackingRepository cardTrackingRepository;
+
+    @MockitoBean
+    private EbayBrowseClient ebayBrowseClient;
 
     @Test
     void search_findsCardByPlayerName() throws Exception {
@@ -57,15 +69,32 @@ class CardsApiIntegrationTest extends ApiIntegrationTestBase {
     @Test
     void market_computesFloorMedianAndListings() throws Exception {
         UUID id = insertCard("Market Player " + UUID.randomUUID(), 2024, "Topps", "Chrome", "1");
-        insertObservation(id, "L1-" + id, "RAW", "RAW", "50.00", Instant.now());
-        insertObservation(id, "L2-" + id, "RAW", "RAW", "70.00", Instant.now());
+        String listing1 = "L1-" + id;
+        String listing2 = "L2-" + id;
+        insertObservation(id, listing1, "RAW", "RAW", "50.00", Instant.now());
+        insertObservation(id, listing2, "RAW", "RAW", "70.00", Instant.now());
+
+        // OQ-16: imageUrl is fetched live from the Browse API per listing, not stored - one listing
+        // has an image, the other doesn't, to exercise the nullable case too.
+        when(ebayBrowseClient.getItem(eq(listing1)))
+                .thenReturn(Mono.just(itemDetail(listing1, "https://i.ebayimg.com/images/g/abc/s-l500.jpg")));
+        when(ebayBrowseClient.getItem(eq(listing2)))
+                .thenReturn(Mono.just(itemDetail(listing2, null)));
 
         mockMvc.perform(get("/api/v1/cards/{id}/market", id).param("grade", "ALL"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.floorPrice").value(50.00))
                 .andExpect(jsonPath("$.medianAsk").value(60.00))
                 .andExpect(jsonPath("$.activeListings").value(2))
-                .andExpect(jsonPath("$.listings.length()").value(2));
+                .andExpect(jsonPath("$.listings.length()").value(2))
+                .andExpect(jsonPath("$.listings[0].imageUrl")
+                        .value("https://i.ebayimg.com/images/g/abc/s-l500.jpg"))
+                .andExpect(jsonPath("$.listings[1].imageUrl").doesNotExist());
+    }
+
+    private ItemDetail itemDetail(String itemId, String imageUrl) {
+        return new ItemDetail(itemId, "title", new BigDecimal("50.00"), "USD", "Graded",
+                "https://ebay.com/itm/" + itemId, "seller1", ListingFormat.FIXED_PRICE, null, null, imageUrl);
     }
 
     @Test
