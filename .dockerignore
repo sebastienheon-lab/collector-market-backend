@@ -1,0 +1,11 @@
+target/
+.git/
+.idea/
+*.md
+docs/
+.env
+.env.*
+
+# Nested under src/main/resources, not repo root - the recursive ** is required or this
+# pattern only matches a root-level file and the credentials leak into the build context.
+**/application-credentials.yml

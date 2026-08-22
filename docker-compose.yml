@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/collector_market_dev
+      # Secret is mounted as a directory entry named application-credentials.yml (see the
+      # secret's `target` below), so Spring's directory-scan resolves it as the "credentials"
+      # profile document (already in spring.profiles.include) - no extension workaround needed.
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/run/secrets/
+    secrets:
+      - source: app_credentials
+        target: application-credentials.yml
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+secrets:
+  app_credentials:
+    # Same file the "local" Maven profile already reads off the classpath - single source of
+    # truth, not a repo-root duplicate. Must exist before `docker compose up` (see README).
+    file: ./src/main/resources/application-credentials.yml
